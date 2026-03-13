@@ -1,0 +1,295 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  passwordHash  String?
+  neighborhood  String?
+  profilePhoto  String?
+  role          String    @default("user")
+  churchId      String?
+  bio           String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts        Account[]
+  sessions        Session[]
+  profile         Profile?
+  church          Church?         @relation(fields: [churchId], references: [id])
+  posts           Post[]
+  comments        Comment[]
+  reactions       Reaction[]
+  prayerRequests  PrayerRequest[]
+  prayerSupports  PrayerSupport[]
+  groups          GroupMember[]
+  ledGroups       Group[]
+  businesses      Business[]
+  jobs            Job[]
+  resources       Resource[]
+  recommendations Recommendation[]
+  endorsements    Endorsement[]
+  churchAttendees ChurchAttendee[]
+}
+
+model Post {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  content     String   @db.Text
+  category    String
+  location    String?
+  isAnonymous Boolean  @default(false) @map("is_anonymous")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  author    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments  Comment[]
+  reactions Reaction[]
+
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  authorId  String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Reaction {
+  id     String @id @default(cuid())
+  postId String
+  userId String
+  type   String @default("amen")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+}
+
+model PrayerRequest {
+  id          String   @id @default(cuid())
+  authorId    String
+  content     String   @db.Text
+  isAnonymous Boolean  @default(false)
+  prayerCount Int      @default(0)
+  isAnswered  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author   User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  supports PrayerSupport[]
+}
+
+model PrayerSupport {
+  id              String   @id @default(cuid())
+  prayerRequestId String
+  userId          String
+  createdAt       DateTime @default(now())
+
+  prayerRequest PrayerRequest @relation(fields: [prayerRequestId], references: [id], onDelete: Cascade)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([prayerRequestId, userId])
+}
+
+model Group {
+  id               String   @id @default(cuid())
+  name             String
+  description      String   @db.Text
+  type             String
+  meetingFrequency String?
+  location         String?
+  isVirtual        Boolean  @default(false)
+  leaderId         String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  leader  User          @relation(fields: [leaderId], references: [id], onDelete: Cascade)
+  members GroupMember[]
+}
+
+model GroupMember {
+  id       String   @id @default(cuid())
+  groupId  String
+  userId   String
+  joinedAt DateTime @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+}
+
+model Recommendation {
+  id           String   @id @default(cuid())
+  authorId     String
+  businessName String
+  category     String
+  description  String   @db.Text
+  whyRecommend String   @db.Text
+  contactInfo  String?
+  website      String?
+  phone        String?
+  neighborhood String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  author       User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  endorsements Endorsement[]
+}
+
+model Endorsement {
+  id               String   @id @default(cuid())
+  recommendationId String
+  userId           String
+  createdAt        DateTime @default(now())
+
+  recommendation Recommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([recommendationId, userId])
+}
+
+model Business {
+  id                 String   @id @default(cuid())
+  ownerId            String
+  name               String
+  ownerName          String?
+  category           String
+  description        String   @db.Text
+  christianStatement String?  @db.Text
+  website            String?
+  phone              String?
+  address            String?
+  neighborhood       String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+}
+
+model Job {
+  id            String   @id @default(cuid())
+  posterId      String
+  type          String
+  description   String   @db.Text
+  payRate       String?
+  frequency     String?
+  contactMethod String
+  neighborhood  String?
+  familyName    String?
+  isOpen        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  poster User @relation(fields: [posterId], references: [id], onDelete: Cascade)
+}
+
+model Resource {
+  id           String   @id @default(cuid())
+  posterId     String
+  name         String
+  description  String   @db.Text
+  condition    String?
+  category     String
+  isAvailable  Boolean  @default(true)
+  isFree       Boolean  @default(true)
+  contactInfo  String?
+  neighborhood String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  poster User @relation(fields: [posterId], references: [id], onDelete: Cascade)
+}
+
+model Church {
+  id           String   @id @default(cuid())
+  name         String
+  denomination String?
+  address      String?
+  neighborhood String?
+  serviceTimes String?
+  website      String?
+  phone        String?
+  description  String?  @db.Text
+  photoUrl     String?
+  serviceStyle String?
+  createdAt    DateTime @default(now())
+
+  users     User[]
+  attendees ChurchAttendee[]
+}
+
+model ChurchAttendee {
+  id        String   @id @default(cuid())
+  churchId  String
+  userId    String
+  createdAt DateTime @default(now())
+
+  church Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([churchId, userId])
+}
+
+model Profile {
+  id        String   @id
+  createdAt DateTime @default(now()) @map("created_at")
+  name      String?
+  city      String?
+  church    String?
+  avatarUrl String?  @map("avatar_url")
+
+  user User @relation(fields: [id], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}

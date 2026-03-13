@@ -1,101 +1,95 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect, useCallback } from "react";
+import PostCard from "@/components/feed/PostCard";
+import NewPostForm from "@/components/feed/NewPostForm";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const CATEGORIES = [
+  { value: "all", label: "All" },
+  { value: "general", label: "Updates" },
+  { value: "prayer", label: "🙏 Prayer" },
+  { value: "help", label: "🤝 Help" },
+  { value: "marketplace", label: "🛒 Market" },
+];
+
+type Post = {
+  id: string;
+  content: string;
+  category: string;
+  location: string | null;
+  isAnonymous: boolean;
+  createdAt: string;
+  author: { id: string; name: string | null; location: string | null; profilePhoto: string | null };
+  comments: { id: string; content: string; createdAt: string; author: { id: string; name: string | null; profilePhoto: string | null } }[];
+  reactions: { id: string; userId: string; type: string }[];
+  _count: { comments: number; reactions: number };
+};
+
+export default function HomePage() {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [category, setCategory] = useState("all");
+  const [loading, setLoading] = useState(true);
+
+  const fetchPosts = useCallback(async () => {
+    setLoading(true);
+    const params = new URLSearchParams();
+    if (category !== "all") params.set("category", category);
+    const res = await fetch(`/api/posts?${params}`);
+    if (res.ok) {
+      const data = await res.json();
+      setPosts(data);
+    }
+    setLoading(false);
+  }, [category]);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
+
+  function handleNewPost(post: unknown) {
+    setPosts((prev) => [post as Post, ...prev]);
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div>
+      <NewPostForm onPost={handleNewPost} />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Filter tabs */}
+      <Tabs value={category} onValueChange={setCategory} className="my-4">
+        <TabsList className="bg-white border border-gray-100 shadow-sm h-auto p-1 gap-0.5">
+          {CATEGORIES.map((c) => (
+            <TabsTrigger
+              key={c.value}
+              value={c.value}
+              className="data-[state=active]:bg-navy data-[state=active]:text-cream text-sm px-4 py-1.5 rounded-md"
+            >
+              {c.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+
+      {/* Posts */}
+      {loading ? (
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white rounded-2xl h-36 animate-pulse" />
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      ) : posts.length === 0 ? (
+        <div className="text-center py-16 text-navy/40">
+          <p className="text-4xl mb-3">✝️</p>
+          <p className="font-playfair text-lg text-navy/60">No posts yet — be the first to share!</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {posts.map((post) => (
+            <PostCard key={post.id} post={post} onUpdate={fetchPosts} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
+
