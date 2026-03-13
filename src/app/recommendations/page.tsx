@@ -39,6 +39,7 @@ type Rec = {
   website: string | null;
   phone: string | null;
   neighborhood: string | null;
+  featuredPartner: boolean;
   createdAt: string;
   author: { id: string; name: string | null; neighborhood: string | null; profilePhoto: string | null };
   endorsements: { id: string; userId: string }[];
@@ -146,8 +147,37 @@ export default function RecommendationsPage() {
           <p className="font-playfair text-xl text-navy/50">No recommendations yet</p>
         </div>
       ) : (
+        <>
+          {/* Featured Founding Partners */}
+          {recs.some(r => r.featuredPartner) && (
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs font-bold tracking-widest text-gold uppercase">⭐ Featured Founding Partners</span>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                {recs.filter(r => r.featuredPartner).map((rec) => (
+                  <Card key={rec.id} className="p-5 border-2 border-gold/40 shadow-sm bg-gradient-to-br from-white to-gold/5 hover:shadow-md transition-shadow">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-playfair font-bold text-navy text-lg">{rec.businessName}</h3>
+                        </div>
+                        <span className="text-xs bg-gold/20 text-gold px-2 py-0.5 rounded-full font-bold">Founding Partner</span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-navy/70 mt-2 mb-1">{rec.description}</p>
+                    <p className="text-sm text-navy/80 italic mb-3">&ldquo;{rec.whyRecommend}&rdquo;</p>
+                    {rec.neighborhood && (
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="w-3 h-3" />{rec.neighborhood}</span>
+                    )}
+                  </Card>
+                ))}
+              </div>
+              <div className="border-t border-cream my-6" />
+            </div>
+          )}
         <div className="grid gap-4 md:grid-cols-2">
-          {recs.map((rec) => {
+          {recs.filter(r => !r.featuredPartner).map((rec) => {
             const endorsed = session?.user?.id ? rec.endorsements.some((e) => e.userId === session.user.id) : false;
             return (
               <Card key={rec.id} className="p-5 border-0 shadow-sm bg-white hover:shadow-md transition-shadow">
@@ -201,6 +231,7 @@ export default function RecommendationsPage() {
             );
           })}
         </div>
+        </>
       )}
 
       {/* Add form dialog */}

@@ -41,6 +41,7 @@ type Church = {
   description: string | null;
   photoUrl: string | null;
   serviceStyle: string | null;
+  featuredPartner: boolean;
   attendees: { id: string; user: { id: string; name: string | null; profilePhoto: string | null } }[];
   _count: { attendees: number };
 };
@@ -133,8 +134,42 @@ export default function FindAChurchPage() {
           {[1,2,3,4].map(i => <div key={i} className="bg-white rounded-2xl h-64 animate-pulse" />)}
         </div>
       ) : (
+        <>
+          {/* Featured Founding Partner Churches */}
+          {churches.some(c => c.featuredPartner) && (
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs font-bold tracking-widest text-gold uppercase">⭐ Featured Founding Partners</span>
+              </div>
+              <div className="grid gap-6 md:grid-cols-2">
+                {churches.filter(c => c.featuredPartner).map((church) => (
+                  <Card key={church.id} className="border-2 border-gold/40 shadow-sm bg-gradient-to-br from-white to-gold/5 overflow-hidden hover:shadow-md transition-shadow">
+                    <div className="h-2 bg-gradient-to-r from-gold to-gold/60" />
+                    <div className="p-5">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div>
+                          <h3 className="font-playfair font-bold text-navy text-xl leading-tight">{church.name}</h3>
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            <span className="text-xs bg-gold/20 text-gold px-2 py-0.5 rounded-full font-bold">Founding Partner</span>
+                            {church.denomination && (
+                              <Badge variant="outline" className="text-xs border-navy/20 text-navy/70">{church.denomination}</Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      {church.description && <p className="text-sm text-navy/70 mt-2">{church.description}</p>}
+                      {church.neighborhood && (
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground mt-2"><MapPin className="w-3 h-3" />{church.neighborhood}</span>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+              <div className="border-t border-cream my-6" />
+            </div>
+          )}
         <div className="grid gap-6 md:grid-cols-2">
-          {churches.map((church) => {
+          {churches.filter(c => !c.featuredPartner).map((church) => {
             const isAttending = session?.user?.id
               ? church.attendees.some((a) => a.user.id === session.user.id)
               : false;
@@ -243,6 +278,7 @@ export default function FindAChurchPage() {
             );
           })}
         </div>
+        </>
       )}
 
       {/* CTA */}

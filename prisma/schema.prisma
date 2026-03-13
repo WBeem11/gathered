@@ -179,9 +179,10 @@ model Recommendation {
   contactInfo  String?
   website      String?
   phone        String?
-  neighborhood String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  neighborhood    String?
+  featuredPartner Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   author       User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
   endorsements Endorsement[]
@@ -260,10 +261,11 @@ model Church {
   serviceTimes String?
   website      String?
   phone        String?
-  description  String?  @db.Text
-  photoUrl     String?
-  serviceStyle String?
-  createdAt    DateTime @default(now())
+  description     String?  @db.Text
+  photoUrl        String?
+  serviceStyle    String?
+  featuredPartner Boolean  @default(false)
+  createdAt       DateTime @default(now())
 
   users     User[]
   attendees ChurchAttendee[]
