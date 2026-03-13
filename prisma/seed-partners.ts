@@ -8,7 +8,7 @@ async function main() {
 
   const rec = await prisma.recommendation.upsert({
     where: { id: "rec-ninth-street" },
-    update: {},
+    update: { photoUrl: "/ninth-street.jpg" },
     create: {
       id: "rec-ninth-street",
       authorId: user.id,
@@ -19,6 +19,7 @@ async function main() {
       whyRecommend:
         "Incredible community hub for families and athletes alike. Christian-owned and community-focused.",
       neighborhood: "Minneapolis",
+      photoUrl: "/ninth-street.jpg",
       featuredPartner: true,
     },
   });

@@ -180,6 +180,7 @@ model Recommendation {
   website      String?
   phone        String?
   neighborhood    String?
+  photoUrl        String?
   featuredPartner Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

@@ -39,6 +39,7 @@ type Rec = {
   website: string | null;
   phone: string | null;
   neighborhood: string | null;
+  photoUrl: string | null;
   featuredPartner: boolean;
   createdAt: string;
   author: { id: string; name: string | null; neighborhood: string | null; profilePhoto: string | null };
@@ -156,20 +157,27 @@ export default function RecommendationsPage() {
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 {recs.filter(r => r.featuredPartner).map((rec) => (
-                  <Card key={rec.id} className="p-5 border-2 border-gold/40 shadow-sm bg-gradient-to-br from-white to-gold/5 hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-playfair font-bold text-navy text-lg">{rec.businessName}</h3>
-                        </div>
-                        <span className="text-xs bg-gold/20 text-gold px-2 py-0.5 rounded-full font-bold">Founding Partner</span>
+                  <Card key={rec.id} className="border-2 border-gold/40 shadow-sm bg-gradient-to-br from-white to-gold/5 hover:shadow-md transition-shadow overflow-hidden">
+                    {rec.photoUrl && (
+                      <div className="h-36 overflow-hidden">
+                        <img src={rec.photoUrl} alt={rec.businessName} className="w-full h-full object-cover" />
                       </div>
-                    </div>
-                    <p className="text-sm text-navy/70 mt-2 mb-1">{rec.description}</p>
-                    <p className="text-sm text-navy/80 italic mb-3">&ldquo;{rec.whyRecommend}&rdquo;</p>
-                    {rec.neighborhood && (
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="w-3 h-3" />{rec.neighborhood}</span>
                     )}
+                    <div className="p-5">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-playfair font-bold text-navy text-lg">{rec.businessName}</h3>
+                          </div>
+                          <span className="text-xs bg-gold/20 text-gold px-2 py-0.5 rounded-full font-bold">Founding Partner</span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-navy/70 mt-2 mb-1">{rec.description}</p>
+                      <p className="text-sm text-navy/80 italic mb-3">&ldquo;{rec.whyRecommend}&rdquo;</p>
+                      {rec.neighborhood && (
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="w-3 h-3" />{rec.neighborhood}</span>
+                      )}
+                    </div>
                   </Card>
                 ))}
               </div>
