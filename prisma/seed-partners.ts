@@ -8,12 +8,12 @@ async function main() {
 
   const rec = await prisma.recommendation.upsert({
     where: { id: "rec-ninth-street" },
-    update: { photoUrl: "/ninth-street.jpg" },
+    update: { photoUrl: "/ninth-street.jpg", category: "coffee" },
     create: {
       id: "rec-ninth-street",
       authorId: user.id,
       businessName: "Ninth Street Soccer & Coffee",
-      category: "other",
+      category: "coffee",
       description:
         "A beloved Twin Cities gathering spot where the soccer community meets great coffee. Indoor soccer training, youth leagues, and a welcoming café all under one roof.",
       whyRecommend:

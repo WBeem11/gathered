@@ -26,6 +26,7 @@ const CATEGORIES = [
   { value: "landscaping", label: "Landscaping" },
   { value: "auto", label: "Auto Repair" },
   { value: "childcare", label: "Childcare" },
+  { value: "coffee", label: "Coffee Shop" },
   { value: "other", label: "Other" },
 ];
 
