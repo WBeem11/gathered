@@ -30,52 +30,25 @@ export async function POST(request: Request) {
     subject: "You're on the Gathered waitlist 🌿",
     html: `
       <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; padding: 40px 20px; color: #1a1a18;">
-
-        <h1 style="font-size: 28px; color: #2D6A4F; margin-bottom: 8px;">You're in.</h1>
-
-        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 20px;">
-          Hi ${firstName || 'friend'} — welcome to Gathered.
-        </p>
-
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 20px;">Hey ${firstName || 'friend'}!</p>
         <p style="font-size: 15px; line-height: 1.7; margin-bottom: 20px; color: #444;">
-          We're building the Christian community platform for Minneapolis —
-          prayer requests, church finder, Christian business directory,
-          neighborhood groups, and more.
+          Gathered is a Christian Community platform for Minneapolis. Prayer requests, church finder, Christian Business Directory, groups, events. Built for believers who know that community doesn't end when Sunday service does.
         </p>
-
         <p style="font-size: 15px; line-height: 1.7; margin-bottom: 20px; color: #444;">
-          You'll be among the first to get access when we launch.
-          We'll keep you posted on our progress.
+          We're in the final stretch of building and you'll be among the first to get access when we launch.
         </p>
-
-        <div style="background: #d8f3dc; border-radius: 12px; padding: 20px 24px; margin: 28px 0;">
-          <p style="margin: 0; font-size: 14px; color: #1b4332; font-weight: 500;">
-            In the meantime — follow us on Instagram for updates,
-            behind the scenes, and the best Christian content in Minneapolis.
-          </p>
-          <a href="https://instagram.com/gatheredmpls"
-             style="display: inline-block; margin-top: 12px; background: #2D6A4F; color: #d8f3dc;
-                    padding: 10px 20px; border-radius: 999px; text-decoration: none; font-size: 13px; font-weight: 500;">
-            Follow @gatheredmpls
-          </a>
-        </div>
-
-        <p style="font-size: 15px; line-height: 1.7; color: #444;">
-          See you soon. 🌿
+        <p style="font-size: 15px; line-height: 1.7; margin-bottom: 20px; color: #444;">
+          In the meantime, follow us on instagram <a href="https://instagram.com/gathered_community" style="color: #2D5A27;">@gathered_community</a> for updates, behind the scenes, and more.
         </p>
-
-        <p style="font-size: 15px; color: #2D6A4F; font-weight: 500;">
-          — [Your name] + [Wife's name]<br>
-          <span style="font-weight: 400; color: #666;">Founders, Gathered</span>
+        <p style="font-size: 15px; line-height: 1.7; color: #444;">See you soon.</p>
+        <p style="font-size: 15px; color: #2D5A27; font-weight: 500; margin-top: 24px;">
+          Wyatt and Abby<br>
+          <span style="font-weight: 400; color: #666;">Founders of Gathered</span>
         </p>
-
         <hr style="border: none; border-top: 1px solid #e0d9ce; margin: 32px 0;" />
-
         <p style="font-size: 12px; color: #999; text-align: center;">
-          Gathered · Minneapolis, MN ·
-          <a href="https://trygathered.com" style="color: #2D6A4F;">trygathered.com</a>
+          <a href="https://trygathered.com" style="color: #2D5A27;">trygathered.com</a>
         </p>
-
       </div>
     `
   });
