@@ -11,6 +11,7 @@ import {
   Church,
   Users,
   CalendarDays,
+  Store,
   LogIn,
   LogOut,
   User,
@@ -31,6 +32,7 @@ const navLinks = [
   { href: "/prayer", label: "Prayer", icon: Heart },
   { href: "/find-a-church", label: "Churches", icon: Church },
   { href: "/groups", label: "Groups", icon: Users },
+  { href: "/recommendations", label: "Businesses", icon: Store },
   { href: "/events", label: "Events", icon: CalendarDays },
 ];
 

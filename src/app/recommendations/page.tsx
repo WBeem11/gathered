@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ThumbsUp, MapPin, Globe, Phone } from "lucide-react";
 import Link from "next/link";
+import SearchBar from "@/components/ui/SearchBar";
 
 const CATEGORIES = [
   { value: "all", label: "All" },
@@ -107,9 +108,10 @@ export default function RecommendationsPage() {
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-3xl">
+      <SearchBar />
       <div className="text-center mb-8">
-        <div className="text-5xl mb-3">👍</div>
-        <h1 className="font-playfair text-3xl md:text-4xl font-bold text-navy mb-2">Recommendations</h1>
+        <div className="text-5xl mb-3">🏪</div>
+        <h1 className="font-playfair text-3xl md:text-4xl font-bold text-navy mb-2">Businesses</h1>
         <p className="text-navy/60 max-w-md mx-auto">
           Trust the people who trust Jesus. Recommend local businesses and service providers you love.
         </p>
