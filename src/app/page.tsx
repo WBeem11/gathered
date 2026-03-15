@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import PostCard from "@/components/feed/PostCard";
 import NewPostForm from "@/components/feed/NewPostForm";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SearchBar from "@/components/ui/SearchBar";
 
 const CATEGORIES = [
   { value: "all", label: "All" },
@@ -53,6 +54,7 @@ export default function HomePage() {
 
   return (
     <div>
+      <SearchBar />
       <NewPostForm onPost={handleNewPost} />
 
       {/* Filter tabs */}

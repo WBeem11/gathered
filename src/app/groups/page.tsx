@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Users, MapPin, Calendar } from "lucide-react";
 import Link from "next/link";
+import SearchBar from "@/components/ui/SearchBar";
 
 const GROUP_TYPES = [
   { value: "bible_study", label: "Bible Study", emoji: "📖" },
@@ -69,6 +70,7 @@ export default function GroupsPage() {
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-3xl">
+      <SearchBar />
       <div className="text-center mb-8">
         <div className="text-5xl mb-3">👥</div>
         <h1 className="font-playfair text-3xl md:text-4xl font-bold text-navy mb-2">Community Groups</h1>

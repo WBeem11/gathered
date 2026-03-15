@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Globe, Phone, Clock, Users } from "lucide-react";
 import Link from "next/link";
+import SearchBar from "@/components/ui/SearchBar";
 
 const DENOMINATIONS = [
   { value: "all", label: "All Denominations" },
@@ -87,6 +88,7 @@ export default function FindAChurchPage() {
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl">
+      <SearchBar />
       {/* Hero */}
       <div className="text-center mb-10">
         <div className="text-5xl mb-3">⛪</div>

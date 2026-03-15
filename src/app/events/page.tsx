@@ -1,10 +1,12 @@
 "use client";
 
 import { CalendarDays } from "lucide-react";
+import SearchBar from "@/components/ui/SearchBar";
 
 export default function EventsPage() {
   return (
     <div className="container mx-auto px-4 py-6 max-w-3xl">
+      <SearchBar />
       <div className="text-center mb-10">
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 rounded-2xl bg-navy/10 flex items-center justify-center">

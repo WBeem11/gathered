@@ -109,6 +109,24 @@
   }
 }
 
+/* ── Global dark mode overrides ──────────────────────────────────────── */
+/* Higher specificity than single Tailwind utilities, so these win */
+.dark .bg-white        { background-color: #1e1e1e !important; }
+.dark .bg-gray-50      { background-color: #1a1a1a !important; }
+.dark .bg-cream        { background-color: #262626 !important; }
+.dark .bg-gray-100     { background-color: #2a2a2a !important; }
+.dark .text-navy       { color: #d0ead2 !important; }
+.dark .text-gray-900   { color: #f0f0f0 !important; }
+.dark .text-gray-800   { color: #e0e0e0 !important; }
+.dark .text-gray-700   { color: #d0d0d0 !important; }
+.dark .text-gray-600   { color: #b0b0b0 !important; }
+.dark .text-gray-500   { color: #909090 !important; }
+.dark .text-gray-400   { color: #707070 !important; }
+.dark .border-gray-100 { border-color: #2e2e2e !important; }
+.dark .border-gray-200 { border-color: #363636 !important; }
+.dark .border-cream    { border-color: #333 !important; }
+/* ─────────────────────────────────────────────────────────────────────── */
+
 @utility font-playfair {
   font-family: 'Playfair Display', Georgia, serif;
 }

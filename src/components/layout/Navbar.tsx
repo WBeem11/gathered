@@ -15,7 +15,6 @@ import {
   LogOut,
   User,
   Edit3,
-  Search,
   Sun,
   Moon,
   Briefcase,
@@ -23,14 +22,9 @@ import {
   ChevronUp,
   Copy,
   Check,
+  Settings,
 } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
-
-type SearchResult = {
-  title: string;
-  type: string;
-  href: string;
-};
 
 const navLinks = [
   { href: "/", label: "Feed", icon: Home },
@@ -47,46 +41,26 @@ export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
 
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
   const [inviteCopied, setInviteCopied] = useState(false);
 
   const profileMenuRef = useRef<HTMLDivElement>(null);
-  const searchRef = useRef<HTMLDivElement>(null);
 
   const initials = session?.user?.name
     ? session.user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "?";
 
-  // Close menus on outside click
+  // Close profile menu on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
         setProfileMenuOpen(false);
       }
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setSearchOpen(false);
-      }
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
-
-  // Debounced search
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
-      return;
-    }
-    const timeout = setTimeout(async () => {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
-      if (res.ok) setSearchResults(await res.json());
-    }, 300);
-    return () => clearTimeout(timeout);
-  }, [searchQuery]);
 
   async function handleInviteClick() {
     if (!session) {
@@ -126,37 +100,6 @@ export default function Navbar() {
             <GatheredLogo />
             <span className="font-playfair text-xl font-bold text-navy dark:text-white tracking-wide">Gathered</span>
           </Link>
-        </div>
-
-        {/* Search bar */}
-        <div className="px-3 pt-3 pb-1" ref={searchRef}>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setSearchOpen(true); }}
-              onFocus={() => setSearchOpen(true)}
-              placeholder="Search Gathered..."
-              className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-[#262626] dark:text-white border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-navy/30 placeholder:text-gray-400 dark:placeholder:text-gray-500"
-            />
-            {searchOpen && searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden z-50 max-h-72 overflow-y-auto">
-                {searchResults.map((result, i) => (
-                  <Link
-                    key={i}
-                    href={result.href}
-                    onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
-                    className="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-[#262626] transition-colors"
-                  >
-                    <span className="text-[10px] bg-navy/10 dark:bg-white/10 text-navy dark:text-white px-1.5 py-0.5 rounded font-bold uppercase flex-shrink-0">
-                      {result.type}
-                    </span>
-                    <span className="text-sm text-gray-800 dark:text-gray-200 truncate">{result.title}</span>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Nav links */}
@@ -209,6 +152,14 @@ export default function Navbar() {
               {/* Profile dropdown */}
               {profileMenuOpen && (
                 <div className="absolute bottom-full left-3 right-3 mb-2 bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 py-1 z-50">
+                  <Link
+                    href="/settings"
+                    onClick={() => setProfileMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                  >
+                    <Settings className="w-4 h-4 text-navy dark:text-gray-400" />
+                    Settings
+                  </Link>
                   <Link
                     href="/directory"
                     onClick={() => setProfileMenuOpen(false)}

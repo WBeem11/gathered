@@ -25,7 +25,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased bg-gray-50 min-h-screen">
+      <body className="antialiased bg-gray-50 dark:bg-[#262626] min-h-screen transition-colors duration-200">
         <Providers>
           <Navbar />
           {/* Offset content by sidebar width on desktop */}

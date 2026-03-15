@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
+import SearchBar from "@/components/ui/SearchBar";
 
 type Post = {
   id: string;
@@ -67,6 +68,7 @@ export default function PrayerPage() {
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-2xl">
+      <SearchBar />
       {/* Hero */}
       <div className="text-center mb-8">
         <div className="text-5xl mb-3">🙏</div>
