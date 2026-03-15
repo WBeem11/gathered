@@ -175,8 +175,8 @@ export default function Navbar() {
                     className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                   >
                     {theme === "dark"
-                      ? <Sun className="w-4 h-4 text-gold" />
-                      : <Moon className="w-4 h-4 text-navy" />
+                      ? <Sun className="w-4 h-4 text-sage" />
+                      : <Moon className="w-4 h-4 text-sage" />
                     }
                     {theme === "dark" ? "Light Mode" : "Dark Mode"}
                   </button>
@@ -195,7 +195,7 @@ export default function Navbar() {
                 onClick={() => setProfileMenuOpen(!profileMenuOpen)}
                 className="flex items-center gap-3 w-full hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg px-1 py-1 transition-colors"
               >
-                <Avatar className="w-9 h-9 border-2 border-gold/40 flex-shrink-0">
+                <Avatar className="w-9 h-9 border-2 border-sage/60 flex-shrink-0">
                   <AvatarImage src={session.user?.image ?? ""} />
                   <AvatarFallback className="bg-navy text-cream text-xs font-bold">{initials}</AvatarFallback>
                 </Avatar>
@@ -300,11 +300,7 @@ export default function Navbar() {
 
 function GatheredLogo() {
   return (
-    <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 flex-shrink-0">
-      <circle cx="13" cy="18" r="10" stroke="#C9A84C" strokeWidth="1.5" fillOpacity="0" />
-      <circle cx="23" cy="18" r="10" stroke="#C9A84C" strokeWidth="1.5" fillOpacity="0" />
-      <line x1="18" y1="11" x2="18" y2="25" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round" />
-      <line x1="12" y1="17" x2="24" y2="17" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round" />
-    </svg>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src="/logo.png" alt="Gathered" className="w-8 h-8 flex-shrink-0 rounded-lg object-cover" />
   );
 }

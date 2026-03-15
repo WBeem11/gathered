@@ -8,9 +8,9 @@
   /* Brand colors */
   --color-navy: #2D5A27;
   --color-navy-light: #3D7A35;
-  --color-gold: #C9A84C;
-  --color-gold-light: #DFC078;
-  --color-cream: #FAF7F2;
+  --color-gold: #6B7280;
+  --color-gold-light: #9CA3AF;
+  --color-cream: #F5F7F5;
   --color-sage: #7A9E7E;
   --color-sage-light: #A8C5AB;
 
@@ -73,7 +73,7 @@
 
   body {
     @apply bg-background text-foreground;
-    background-color: #FAF7F2;
+    background-color: #F5F7F5;
     font-family: 'Inter', system-ui, sans-serif;
   }
 

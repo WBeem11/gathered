@@ -36,12 +36,12 @@ export default function RightSidebar() {
       </div>
 
       {/* Verse of the day */}
-      <div className="bg-navy rounded-xl p-4 text-cream">
-        <p className="text-xs font-semibold text-gold uppercase tracking-wide mb-2">Verse of the Day</p>
-        <p className="text-sm leading-relaxed italic text-cream/90">
+      <div className="bg-navy rounded-xl p-4 text-white">
+        <p className="text-xs font-semibold text-sage-light uppercase tracking-wide mb-2">Verse of the Day</p>
+        <p className="text-sm leading-relaxed italic text-white/90">
           &ldquo;And let us consider how to stir up one another to love and good works.&rdquo;
         </p>
-        <p className="text-xs text-cream/50 mt-2">— Hebrews 10:24</p>
+        <p className="text-xs text-white/50 mt-2">— Hebrews 10:24</p>
       </div>
 
       <p className="text-xs text-gray-400 dark:text-gray-600 px-1">
