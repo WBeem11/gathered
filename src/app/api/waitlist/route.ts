@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
   // 2. Send welcome email via Resend
   await resend.emails.send({
-    from: 'hello@trygathered.com',
+    from: 'Gathered <hello@trygathered.com>',
     to: email,
     subject: "You're on the Gathered waitlist 🌿",
     html: `
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
 
   // 3. Notify yourself of new signup
   await resend.emails.send({
-    from: 'hello@trygathered.com',
+    from: 'Gathered <hello@trygathered.com>',
     to: 'wyattbeemer@gmail.com',
     subject: `New waitlist signup: ${email}`,
     html: `<p><strong>${firstName || 'Someone'}</strong> (${email}) just joined the Gathered waitlist.</p>`
