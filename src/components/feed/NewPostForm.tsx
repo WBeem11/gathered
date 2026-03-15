@@ -69,6 +69,7 @@ export default function NewPostForm({ onPost }: NewPostFormProps) {
           </Avatar>
           <div className="flex-1 space-y-3">
             <Textarea
+              id="new-post-textarea"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Share something with your community..."

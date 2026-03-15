@@ -1,53 +1,166 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Home,
   Heart,
-  HeartHandshake,
-  ThumbsUp,
   Church,
   Users,
+  CalendarDays,
   LogIn,
   LogOut,
   User,
   Edit3,
+  Search,
+  Sun,
+  Moon,
+  Briefcase,
+  UserPlus,
+  ChevronUp,
+  Copy,
+  Check,
 } from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
+
+type SearchResult = {
+  title: string;
+  type: string;
+  href: string;
+};
 
 const navLinks = [
   { href: "/", label: "Feed", icon: Home },
   { href: "/prayer", label: "Prayer", icon: Heart },
-  { href: "/help", label: "Help", icon: HeartHandshake },
-  { href: "/recommendations", label: "Recs", icon: ThumbsUp },
   { href: "/find-a-church", label: "Churches", icon: Church },
   { href: "/groups", label: "Groups", icon: Users },
+  { href: "/events", label: "Events", icon: CalendarDays },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { data: session } = useSession();
+  const { theme, toggleTheme } = useTheme();
+
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [inviteLink, setInviteLink] = useState("");
+  const [inviteCopied, setInviteCopied] = useState(false);
+
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const initials = session?.user?.name
     ? session.user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "?";
 
+  // Close menus on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  // Debounced search
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const timeout = setTimeout(async () => {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
+      if (res.ok) setSearchResults(await res.json());
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
+
+  async function handleInviteClick() {
+    if (!session) {
+      router.push("/sign-in");
+      return;
+    }
+    const res = await fetch("/api/invite");
+    if (res.ok) {
+      const data = await res.json();
+      setInviteLink(data.inviteUrl);
+    }
+    setInviteModalOpen(true);
+  }
+
+  async function copyInviteLink() {
+    await navigator.clipboard.writeText(inviteLink);
+    setInviteCopied(true);
+    setTimeout(() => setInviteCopied(false), 2000);
+  }
+
+  function handlePostClick() {
+    router.push("/");
+    setTimeout(() => {
+      const el = document.getElementById("new-post-textarea");
+      el?.focus();
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 150);
+  }
+
   return (
     <>
       {/* Desktop Left Sidebar */}
-      <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-100 flex-col z-40 shadow-sm">
+      <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 bg-white dark:bg-[#1e1e1e] border-r border-gray-100 dark:border-gray-800 flex-col z-40 shadow-sm">
         {/* Logo */}
-        <div className="px-5 py-5 border-b border-gray-100">
+        <div className="px-5 py-5 border-b border-gray-100 dark:border-gray-800">
           <Link href="/" className="flex items-center gap-2.5">
             <GatheredLogo />
-            <span className="font-playfair text-xl font-bold text-navy tracking-wide">Gathered</span>
+            <span className="font-playfair text-xl font-bold text-navy dark:text-white tracking-wide">Gathered</span>
           </Link>
         </div>
 
+        {/* Search bar */}
+        <div className="px-3 pt-3 pb-1" ref={searchRef}>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setSearchOpen(true); }}
+              onFocus={() => setSearchOpen(true)}
+              placeholder="Search Gathered..."
+              className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-[#262626] dark:text-white border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-navy/30 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+            />
+            {searchOpen && searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden z-50 max-h-72 overflow-y-auto">
+                {searchResults.map((result, i) => (
+                  <Link
+                    key={i}
+                    href={result.href}
+                    onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
+                    className="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-[#262626] transition-colors"
+                  >
+                    <span className="text-[10px] bg-navy/10 dark:bg-white/10 text-navy dark:text-white px-1.5 py-0.5 rounded font-bold uppercase flex-shrink-0">
+                      {result.type}
+                    </span>
+                    <span className="text-sm text-gray-800 dark:text-gray-200 truncate">{result.title}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Nav links */}
-        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
           {navLinks.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href || (href !== "/" && pathname.startsWith(href));
             return (
@@ -56,11 +169,11 @@ export default function Navbar() {
                 href={href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-navy/10 text-navy font-semibold"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    ? "bg-navy/10 dark:bg-white/10 text-navy dark:text-white font-semibold"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white"
                 }`}
               >
-                <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? "text-navy" : "text-gray-500"}`} />
+                <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? "text-navy dark:text-white" : "text-gray-500 dark:text-gray-400"}`} />
                 {label}
               </Link>
             );
@@ -68,42 +181,82 @@ export default function Navbar() {
         </nav>
 
         {/* Post button */}
-        <div className="px-4 pb-4">
-          <Link
-            href="/"
-            className="flex items-center justify-center gap-2 w-full bg-navy text-cream py-2.5 rounded-lg text-sm font-semibold hover:bg-navy-light transition-colors"
+        <div className="px-4 pb-3">
+          <button
+            onClick={handlePostClick}
+            className="flex items-center justify-center gap-2 w-full bg-navy dark:bg-white text-cream dark:text-[#262626] py-2.5 rounded-lg text-sm font-semibold hover:bg-navy-light dark:hover:bg-gray-200 transition-colors"
           >
             <Edit3 className="w-4 h-4" />
             Post
-          </Link>
+          </button>
+        </div>
+
+        {/* Invite neighbors */}
+        <div className="px-4 pb-3">
+          <button
+            onClick={handleInviteClick}
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm font-medium text-navy/70 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors border border-dashed border-navy/20 dark:border-gray-600"
+          >
+            <UserPlus className="w-4 h-4" />
+            Invite Neighbors
+          </button>
         </div>
 
         {/* User section */}
-        <div className="px-4 py-4 border-t border-gray-100">
+        <div className="px-4 py-4 border-t border-gray-100 dark:border-gray-800 relative" ref={profileMenuRef}>
           {session ? (
-            <div className="flex items-center gap-3">
-              <Link href={`/profile/${session.user?.id}`}>
+            <>
+              {/* Profile dropdown */}
+              {profileMenuOpen && (
+                <div className="absolute bottom-full left-3 right-3 mb-2 bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 py-1 z-50">
+                  <Link
+                    href="/directory"
+                    onClick={() => setProfileMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                  >
+                    <Briefcase className="w-4 h-4 text-navy dark:text-gray-400" />
+                    Add a Business Page
+                  </Link>
+                  <button
+                    onClick={toggleTheme}
+                    className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                  >
+                    {theme === "dark"
+                      ? <Sun className="w-4 h-4 text-gold" />
+                      : <Moon className="w-4 h-4 text-navy" />
+                    }
+                    {theme === "dark" ? "Light Mode" : "Dark Mode"}
+                  </button>
+                  <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
+                  <button
+                    onClick={() => { signOut({ callbackUrl: "/" }); setProfileMenuOpen(false); }}
+                    className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </button>
+                </div>
+              )}
+
+              <button
+                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                className="flex items-center gap-3 w-full hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg px-1 py-1 transition-colors"
+              >
                 <Avatar className="w-9 h-9 border-2 border-gold/40 flex-shrink-0">
                   <AvatarImage src={session.user?.image ?? ""} />
                   <AvatarFallback className="bg-navy text-cream text-xs font-bold">{initials}</AvatarFallback>
                 </Avatar>
-              </Link>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">{session.user?.name}</p>
-                <p className="text-xs text-gray-400">View profile</p>
-              </div>
-              <button
-                onClick={() => signOut({ callbackUrl: "/" })}
-                className="text-gray-400 hover:text-red-500 transition-colors"
-                title="Sign out"
-              >
-                <LogOut className="w-4 h-4" />
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{session.user?.name}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">Settings &amp; profile</p>
+                </div>
+                <ChevronUp className={`w-4 h-4 text-gray-400 transition-transform ${profileMenuOpen ? "rotate-0" : "rotate-180"}`} />
               </button>
-            </div>
+            </>
           ) : (
             <Link
               href="/sign-in"
-              className="flex items-center gap-2 text-sm font-medium text-navy hover:text-navy-light transition-colors"
+              className="flex items-center gap-2 text-sm font-medium text-navy dark:text-white hover:text-navy-light transition-colors"
             >
               <LogIn className="w-4 h-4" />
               Sign In
@@ -112,8 +265,48 @@ export default function Navbar() {
         </div>
       </aside>
 
+      {/* Invite modal */}
+      {inviteModalOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
+          onClick={() => setInviteModalOpen(false)}
+        >
+          <div
+            className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="font-playfair text-lg font-bold text-navy dark:text-white mb-2">Invite Neighbors</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              Share your unique link. When neighbors join using it, you&apos;ll be connected in the community.
+            </p>
+            {inviteLink ? (
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-gray-50 dark:bg-[#262626] border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-700 dark:text-gray-200 truncate">
+                  {inviteLink}
+                </div>
+                <button
+                  onClick={copyInviteLink}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-navy dark:bg-white text-cream dark:text-[#262626] rounded-lg text-sm font-semibold hover:bg-navy-light dark:hover:bg-gray-200 transition-colors flex-shrink-0"
+                >
+                  {inviteCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {inviteCopied ? "Copied!" : "Copy"}
+                </button>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400">Sign in to get your invite link.</p>
+            )}
+            <button
+              onClick={() => setInviteModalOpen(false)}
+              className="mt-4 w-full text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Bottom Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 pb-safe">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#1e1e1e] border-t border-gray-200 dark:border-gray-700 pb-safe">
         <div className="flex items-center justify-around px-2 py-2">
           {navLinks.slice(0, 5).map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href || (href !== "/" && pathname.startsWith(href));
@@ -122,7 +315,7 @@ export default function Navbar() {
                 key={href}
                 href={href}
                 className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg ${
-                  isActive ? "text-navy" : "text-gray-400"
+                  isActive ? "text-navy dark:text-white" : "text-gray-400 dark:text-gray-500"
                 }`}
               >
                 <Icon className="w-5 h-5" />
@@ -134,17 +327,14 @@ export default function Navbar() {
             <Link
               href={`/profile/${session.user?.id}`}
               className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg ${
-                pathname.startsWith("/profile") ? "text-navy" : "text-gray-400"
+                pathname.startsWith("/profile") ? "text-navy dark:text-white" : "text-gray-400 dark:text-gray-500"
               }`}
             >
               <User className="w-5 h-5" />
               <span className="text-[10px] font-medium">Profile</span>
             </Link>
           ) : (
-            <Link
-              href="/sign-in"
-              className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg text-gray-400"
-            >
+            <Link href="/sign-in" className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg text-gray-400">
               <LogIn className="w-5 h-5" />
               <span className="text-[10px] font-medium">Sign In</span>
             </Link>

@@ -53,9 +53,13 @@ model User {
   role          String    @default("user")
   churchId      String?
   bio           String?
+  inviteCode    String?   @unique
+  invitedById   String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  invitedBy     User?     @relation("UserInvites", fields: [invitedById], references: [id])
+  invitedUsers  User[]    @relation("UserInvites")
   accounts        Account[]
   sessions        Session[]
   profile         Profile?
