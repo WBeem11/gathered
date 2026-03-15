@@ -58,7 +58,7 @@ export async function POST(request: Request) {
   // Notify yourself
   await resend.emails.send({
     from: 'Gathered <hello@trygathered.com>',
-    to: 'wyattbeemer@gmail.com',
+    to: 'wyattbeemer@soteria-media.com',
     subject: `New waitlist signup: ${email}`,
     html: `<p><strong>${firstName || 'Someone'}</strong> (${email}) just joined the Gathered waitlist.</p>`
   });
