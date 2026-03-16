@@ -17,7 +17,8 @@ export async function POST(request: Request) {
     return Response.json({ skipped: true });
   }
 
-  const { email, first_name: firstName } = payload.record;
+  const { email, first_name, name, full_name } = payload.record;
+  const firstName = first_name || name || full_name || '';
 
   if (!email) {
     return Response.json({ error: 'No email in payload' }, { status: 400 });
