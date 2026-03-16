@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { name, description, type, meetingFrequency, location, isVirtual } = await req.json();
+  const { name, description, type, meetingFrequency, location, isVirtual, link } = await req.json();
 
   if (!name || !description || !type) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
       name, description, type,
       meetingFrequency, location,
       isVirtual: isVirtual ?? false,
+      link: link || null,
       leaderId: session.user.id,
       members: {
         create: { userId: session.user.id },

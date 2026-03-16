@@ -153,6 +153,7 @@ model Group {
   meetingFrequency String?
   location         String?
   isVirtual        Boolean  @default(false)
+  link             String?
   leaderId         String
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -286,6 +287,16 @@ model ChurchAttendee {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([churchId, userId])
+}
+
+model Waitlist {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  firstName  String?  @map("first_name")
+  name       String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("waitlist")
 }
 
 model Profile {
