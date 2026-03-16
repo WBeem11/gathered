@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ThumbsUp, MapPin, Globe, Phone } from "lucide-react";
+import { ThumbsUp, MapPin, Globe, Phone, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import SearchBar from "@/components/ui/SearchBar";
 
@@ -158,31 +158,49 @@ export default function RecommendationsPage() {
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-xs font-bold tracking-widest text-gold uppercase">⭐ Featured Founding Partners</span>
               </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                {recs.filter(r => r.featuredPartner).map((rec) => (
-                  <Card key={rec.id} className="border-2 border-gold/40 shadow-sm bg-gradient-to-br from-white to-gold/5 hover:shadow-md transition-shadow overflow-hidden">
-                    {rec.photoUrl && (
-                      <div className="h-36 overflow-hidden">
-                        <img src={rec.photoUrl} alt={rec.businessName} className="w-full h-full object-cover" />
-                      </div>
-                    )}
-                    <div className="p-5">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-playfair font-bold text-navy text-lg">{rec.businessName}</h3>
+              <div className="flex flex-col gap-3">
+                {recs.filter(r => r.featuredPartner).map((rec) => {
+                  const categoryLabel = CATEGORIES.find(c => c.value === rec.category)?.label ?? rec.category;
+                  const initial = rec.businessName[0].toUpperCase();
+                  const card = (
+                    <Card key={rec.id} className="border border-gold/40 bg-white dark:bg-[#1e1e1e] hover:shadow-md transition-shadow overflow-hidden">
+                      <div className="flex items-center gap-4 p-4">
+                        {/* Avatar / logo */}
+                        <div className="shrink-0">
+                          {rec.photoUrl ? (
+                            <img src={rec.photoUrl} alt={rec.businessName} className="w-14 h-14 rounded-full object-cover border-2 border-gold/30" />
+                          ) : (
+                            <div className="w-14 h-14 rounded-full bg-navy/10 dark:bg-white/10 flex items-center justify-center border-2 border-gold/30">
+                              <span className="text-xl font-bold text-navy dark:text-white">{initial}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <h3 className="font-bold text-navy dark:text-white text-base leading-tight">{rec.businessName}</h3>
+                              <p className="text-xs text-muted-foreground mt-0.5">{categoryLabel}{rec.neighborhood ? ` · ${rec.neighborhood}` : ""}</p>
+                            </div>
+                            {rec.website && (
+                              <button className="shrink-0 w-9 h-9 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-white/10 transition-colors">
+                                <ExternalLink className="w-4 h-4 text-navy dark:text-white" />
+                              </button>
+                            )}
                           </div>
-                          <span className="text-xs bg-gold/20 text-gold px-2 py-0.5 rounded-full font-bold">Founding Partner</span>
+                          <p className="text-sm text-navy/70 dark:text-gray-300 mt-1.5 line-clamp-2">{rec.description}</p>
+                          <span className="inline-block mt-2 text-xs bg-gold/20 text-gold px-2 py-0.5 rounded-full font-semibold">⭐ Founding Partner</span>
                         </div>
                       </div>
-                      <p className="text-sm text-navy/70 mt-2 mb-1">{rec.description}</p>
-                      <p className="text-sm text-navy/80 italic mb-3">&ldquo;{rec.whyRecommend}&rdquo;</p>
-                      {rec.neighborhood && (
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="w-3 h-3" />{rec.neighborhood}</span>
-                      )}
-                    </div>
-                  </Card>
-                ))}
+                    </Card>
+                  );
+                  return rec.website ? (
+                    <a key={rec.id} href={rec.website} target="_blank" rel="noopener noreferrer" className="block">
+                      {card}
+                    </a>
+                  ) : <div key={rec.id}>{card}</div>;
+                })}
               </div>
               <div className="border-t border-cream my-6" />
             </div>
