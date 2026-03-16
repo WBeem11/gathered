@@ -289,7 +289,7 @@ export default function FindAChurchPage() {
         <p className="text-cream/70 mb-4 max-w-md mx-auto">
           Our directory is admin-curated to ensure accuracy. Contact us to have your church added.
         </p>
-        <a href="mailto:hello@gathered.community" className="inline-flex items-center gap-2 bg-gold hover:bg-gold-light text-navy font-semibold px-5 py-2.5 rounded-lg transition-colors">
+        <a href="mailto:hello@trygathered.com" className="inline-flex items-center gap-2 bg-gold hover:bg-gold-light text-navy font-semibold px-5 py-2.5 rounded-lg transition-colors">
           Request to Add Your Church
         </a>
       </div>
