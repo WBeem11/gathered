@@ -111,8 +111,8 @@ export default function RecommendationsPage() {
       <SearchBar />
       <div className="text-center mb-8">
         <div className="text-5xl mb-3">🏪</div>
-        <h1 className="font-playfair text-3xl md:text-4xl font-bold text-navy mb-2">Businesses</h1>
-        <p className="text-navy/60 max-w-md mx-auto">
+        <h1 className="font-playfair text-3xl md:text-4xl font-bold text-navy dark:text-white mb-2">Businesses</h1>
+        <p className="text-navy/60 dark:text-gray-400 max-w-md mx-auto">
           Trust the people who trust Jesus. Recommend local businesses and service providers you love.
         </p>
       </div>
@@ -125,7 +125,7 @@ export default function RecommendationsPage() {
               key={c.value}
               onClick={() => setCategory(c.value)}
               className={`text-sm px-3 py-1.5 rounded-full font-medium transition-colors ${
-                category === c.value ? "bg-navy text-cream" : "bg-white text-navy/70 hover:bg-cream border border-navy/10"
+                category === c.value ? "bg-navy text-cream dark:bg-white dark:text-[#262626]" : "bg-white dark:bg-[#1e1e1e] text-navy/70 dark:text-gray-300 hover:bg-cream dark:hover:bg-white/10 border border-navy/10 dark:border-white/10"
               }`}
             >
               {c.label}
@@ -148,7 +148,7 @@ export default function RecommendationsPage() {
         <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="bg-white rounded-2xl h-40 animate-pulse" />)}</div>
       ) : recs.length === 0 ? (
         <div className="text-center py-16">
-          <p className="font-playfair text-xl text-navy/50">No recommendations yet</p>
+          <p className="font-playfair text-xl text-navy/50 dark:text-gray-500">No recommendations yet</p>
         </div>
       ) : (
         <>
