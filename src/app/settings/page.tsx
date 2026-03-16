@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
@@ -9,17 +9,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, User, Mail, MapPin, FileText, Check, AlertCircle } from "lucide-react";
+import { Settings, User, Mail, MapPin, FileText, Check, AlertCircle, Camera, Loader2 } from "lucide-react";
 
 export default function SettingsPage() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update: updateSession } = useSession();
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({ name: "", email: "", neighborhood: "", bio: "" });
+  const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [uploadError, setUploadError] = useState("");
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/sign-in");
@@ -36,11 +40,41 @@ export default function SettingsPage() {
           neighborhood: data.neighborhood ?? "",
           bio: data.bio ?? "",
         });
+        setAvatarUrl(data.profilePhoto ?? session?.user?.image ?? "");
       }
       setLoading(false);
     }
     if (session) load();
   }, [session]);
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setUploadError("");
+
+    // Show local preview immediately
+    const preview = URL.createObjectURL(file);
+    setAvatarUrl(preview);
+
+    const fd = new FormData();
+    fd.append("file", file);
+
+    const res = await fetch("/api/upload-avatar", { method: "POST", body: fd });
+    const data = await res.json();
+
+    if (res.ok) {
+      setAvatarUrl(data.url);
+      await updateSession(); // refresh session so navbar avatar updates
+    } else {
+      setUploadError(data.error ?? "Upload failed. Please try again.");
+      setAvatarUrl(session?.user?.image ?? ""); // revert on error
+    }
+
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -64,8 +98,8 @@ export default function SettingsPage() {
     setSaving(false);
   }
 
-  const initials = session?.user?.name
-    ? session.user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+  const initials = form.name
+    ? form.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "?";
 
   if (loading || status === "loading") {
@@ -96,15 +130,45 @@ export default function SettingsPage() {
             <User className="w-4 h-4" /> Profile
           </h2>
 
-          {/* Avatar preview */}
+          {/* Avatar upload */}
           <div className="flex items-center gap-4 mb-5">
-            <Avatar className="w-14 h-14 border-2 border-gold/40">
-              <AvatarImage src={session?.user?.image ?? ""} />
-              <AvatarFallback className="bg-navy text-cream text-lg font-bold">{initials}</AvatarFallback>
-            </Avatar>
+            <div className="relative group">
+              <Avatar className="w-16 h-16 border-2 border-gold/40">
+                <AvatarImage src={avatarUrl} />
+                <AvatarFallback className="bg-navy text-cream text-lg font-bold">{initials}</AvatarFallback>
+              </Avatar>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              >
+                {uploading
+                  ? <Loader2 className="w-5 h-5 text-white animate-spin" />
+                  : <Camera className="w-5 h-5 text-white" />
+                }
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
+            </div>
             <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">{session?.user?.name}</p>
-              <p className="text-xs text-gray-400">Profile photo is managed via Google or sign-up</p>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="text-sm font-medium text-navy dark:text-white hover:underline disabled:opacity-50"
+              >
+                {uploading ? "Uploading..." : "Change profile photo"}
+              </button>
+              <p className="text-xs text-gray-400 mt-0.5">JPG, PNG or GIF · Max 5MB</p>
+              {uploadError && (
+                <p className="text-xs text-red-500 mt-1">{uploadError}</p>
+              )}
             </div>
           </div>
 
@@ -194,7 +258,7 @@ export default function SettingsPage() {
           </div>
         </Card>
 
-        {/* Feedback messages */}
+        {/* Feedback */}
         {error && (
           <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl text-sm">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
