@@ -1,12 +1,24 @@
 import { Resend } from 'resend';
+import { timingSafeEqual } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+function safeCompare(a: string, b: string): boolean {
+  try {
+    const aBuf = Buffer.from(a);
+    const bBuf = Buffer.from(b);
+    if (aBuf.length !== bBuf.length) return false;
+    return timingSafeEqual(aBuf, bBuf);
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(request: Request) {
-  // Verify the request is from Supabase using a shared secret
   const secret = request.headers.get('x-webhook-secret');
-  if (secret !== process.env.SUPABASE_WEBHOOK_SECRET) {
+  const expected = process.env.SUPABASE_WEBHOOK_SECRET;
+  if (!secret || !expected || !safeCompare(secret, expected)) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
