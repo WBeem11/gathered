@@ -205,7 +205,20 @@ export default function RecommendationsPage() {
                             )}
                           </div>
                           <p className="text-sm text-navy/70 dark:text-gray-300 mt-1.5 line-clamp-2">{rec.description}</p>
-                          <span className="inline-block mt-2 text-xs bg-gold/20 text-gold px-2 py-0.5 rounded-full font-semibold">⭐ Founding Partner</span>
+                          <div className="flex items-center gap-3 mt-2">
+                            <span className="text-xs bg-gold/20 text-gold px-2 py-0.5 rounded-full font-semibold">⭐ Founding Partner</span>
+                            <button
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEndorse(rec.id); }}
+                              className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium border transition-colors ${
+                                session?.user?.id && rec.endorsements.some(e => e.userId === session.user!.id)
+                                  ? "bg-green-100 text-green-700 border-green-200"
+                                  : "text-navy/60 dark:text-gray-400 hover:bg-cream dark:hover:bg-white/10 border-navy/10 dark:border-white/10"
+                              }`}
+                            >
+                              <ThumbsUp className="w-3 h-3" />
+                              Endorse{rec._count.endorsements > 0 ? ` · ${rec._count.endorsements}` : ""}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </Card>
