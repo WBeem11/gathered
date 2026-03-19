@@ -28,9 +28,9 @@ export default function TermsPage() {
         <section>
           <h2 className="font-playfair text-xl font-bold text-navy dark:text-white mb-3">1. Who Can Use Gathered</h2>
           <p>
-            Gathered is open to anyone 13 years of age or older. If you are under 18, you should have a
-            parent or guardian&apos;s permission to use the platform. By using Gathered, you confirm that you
-            meet this age requirement.
+            Gathered is intended for adults 18 years of age or older. By creating an account or using
+            Gathered, you confirm that you are at least 18 years old. If we become aware that a user
+            is under 18, we reserve the right to suspend or terminate their account.
           </p>
         </section>
 
