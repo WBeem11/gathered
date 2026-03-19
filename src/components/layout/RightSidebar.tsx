@@ -46,6 +46,8 @@ export default function RightSidebar() {
 
       <p className="text-xs text-gray-400 dark:text-gray-600 px-1">
         © {new Date().getFullYear()} Gathered · Serving the Twin Cities
+        <span className="mx-1">·</span>
+        <Link href="/terms" className="hover:text-sage transition-colors">Terms</Link>
       </p>
     </aside>
   );
