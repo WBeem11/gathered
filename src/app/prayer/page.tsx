@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import PostCard from "@/components/feed/PostCard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ type Post = {
 
 export default function PrayerPage() {
   const { data: session } = useSession();
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState("");
@@ -46,10 +48,12 @@ export default function PrayerPage() {
     if (!content.trim()) return;
     setSubmitting(true);
 
+    const recaptchaToken = executeRecaptcha ? await executeRecaptcha("create_prayer") : undefined;
+
     const res = await fetch("/api/posts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content, category: "prayer", isAnonymous }),
+      body: JSON.stringify({ content, category: "prayer", isAnonymous, recaptchaToken }),
     });
 
     if (res.ok) {

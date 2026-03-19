@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function SignInPage() {
   const router = useRouter();
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -27,9 +29,12 @@ export default function SignInPage() {
     setError("");
     setLoading(true);
 
+    const recaptchaToken = executeRecaptcha ? await executeRecaptcha("login") : undefined;
+
     const result = await signIn("credentials", {
       email,
       password,
+      recaptchaToken,
       redirect: false,
     });
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { verifyRecaptcha } from "@/lib/verifyRecaptcha";
 
 function normalizePost(post: {
   author: { id: string; name: string | null; neighborhood: string | null; profilePhoto: string | null };
@@ -45,7 +46,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { content, category, location, isAnonymous } = await req.json();
+  const { content, category, location, isAnonymous, recaptchaToken } = await req.json();
+
+  if (recaptchaToken) {
+    const ok = await verifyRecaptcha(recaptchaToken, "create_prayer");
+    if (!ok) return NextResponse.json({ error: "Request failed security check" }, { status: 400 });
+  }
 
   if (!content || !category) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });

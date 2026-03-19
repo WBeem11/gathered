@@ -3,13 +3,19 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
+import { verifyRecaptcha } from "@/lib/verifyRecaptcha";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const body = await req.json();
-  const { businessName, category, description, whyRecommend, website, phone, neighborhood } = body;
+  const { businessName, category, description, whyRecommend, website, phone, neighborhood, recaptchaToken } = body;
+
+  if (recaptchaToken) {
+    const ok = await verifyRecaptcha(recaptchaToken, "create_business");
+    if (!ok) return NextResponse.json({ error: "Submission failed security check" }, { status: 400 });
+  }
 
   if (!businessName || !category || !description || !whyRecommend) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });

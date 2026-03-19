@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +25,7 @@ const TC_NEIGHBORHOODS = [
 
 export default function SignUpPage() {
   const router = useRouter();
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -48,10 +50,12 @@ export default function SignUpPage() {
 
     setLoading(true);
 
+    const recaptchaToken = executeRecaptcha ? await executeRecaptcha("signup") : undefined;
+
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, neighborhood }),
+      body: JSON.stringify({ name, email, password, neighborhood, recaptchaToken }),
     });
 
     if (!res.ok) {

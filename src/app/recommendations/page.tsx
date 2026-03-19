@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ type Rec = {
 
 export default function RecommendationsPage() {
   const { data: session } = useSession();
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [recs, setRecs] = useState<Rec[]>([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState("all");
@@ -74,10 +76,11 @@ export default function RecommendationsPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
+    const recaptchaToken = executeRecaptcha ? await executeRecaptcha("create_business") : undefined;
     const res = await fetch("/api/business-submissions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, recaptchaToken }),
     });
     if (res.ok) {
       setSubmitted(true);
