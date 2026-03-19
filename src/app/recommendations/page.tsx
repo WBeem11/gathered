@@ -69,14 +69,23 @@ export default function RecommendationsPage() {
 
   useEffect(() => { fetchRecs(); }, [fetchRecs]);
 
+  const [submitted, setSubmitted] = useState(false);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
-    const res = await fetch("/api/recommendations", {
+    const res = await fetch("/api/business-submissions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
+    if (res.ok) {
+      setSubmitted(true);
+      setShowForm(false);
+      setForm({ businessName: "", category: "contractor", description: "", whyRecommend: "", contactInfo: "", website: "", phone: "", neighborhood: "" });
+      setSubmitting(false);
+      return;
+    }
     if (res.ok) {
       const rec = await res.json();
       setRecs((prev) => [rec, ...prev]);
@@ -116,6 +125,12 @@ export default function RecommendationsPage() {
           Trust the people who trust Jesus. Recommend local businesses and service providers you love.
         </p>
       </div>
+
+      {submitted && (
+        <div className="mb-6 p-4 rounded-xl bg-sage/10 border border-sage/30 text-sage text-sm text-center">
+          Thanks for your submission! We&apos;ll review it and add it to the directory soon.
+        </div>
+      )}
 
       {/* Action bar */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">

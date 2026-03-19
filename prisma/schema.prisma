@@ -299,6 +299,22 @@ model Waitlist {
   @@map("waitlist")
 }
 
+model BusinessSubmission {
+  id              String   @id @default(cuid())
+  businessName    String
+  category        String
+  description     String
+  whyRecommend    String
+  website         String?
+  phone           String?
+  neighborhood    String?
+  submittedByName  String?
+  submittedByEmail String?
+  createdAt       DateTime @default(now())
+
+  @@map("business_submissions")
+}
+
 model Profile {
   id        String   @id
   createdAt DateTime @default(now()) @map("created_at")
