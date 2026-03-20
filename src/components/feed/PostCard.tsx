@@ -6,7 +6,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, MapPin, Send, MoreHorizontal, Trash2, Flag, Link as LinkIcon, Check, Bookmark } from "lucide-react";
+import { MessageCircle, MapPin, Send, MoreHorizontal, Trash2, Flag, Link as LinkIcon, Check, Bookmark, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
 interface Author {
@@ -29,6 +29,7 @@ interface Post {
   category: string;
   location: string | null;
   isAnonymous: boolean;
+  isAnswered?: boolean;
   imageUrl?: string | null;
   createdAt: string;
   author: Author;
@@ -63,6 +64,7 @@ export default function PostCard({ post, onUpdate, onDelete, isSaved: initialSav
   const [reported, setReported] = useState(false);
   const [deleted, setDeleted] = useState(false);
   const [saved, setSaved] = useState(initialSaved);
+  const [isAnswered, setIsAnswered] = useState(post.isAnswered ?? false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const isOwner = session?.user?.id === post.author.id;
@@ -144,6 +146,15 @@ export default function PostCard({ post, onUpdate, onDelete, isSaved: initialSav
     }
   }
 
+  async function handleAnswer() {
+    setMenuOpen(false);
+    const res = await fetch(`/api/posts/${post.id}/answer`, { method: "POST" });
+    if (res.ok) {
+      const { isAnswered: nowAnswered } = await res.json();
+      setIsAnswered(nowAnswered);
+    }
+  }
+
   function handleShare() {
     setMenuOpen(false);
     const url = `${window.location.origin}/?post=${post.id}`;
@@ -193,9 +204,16 @@ export default function PostCard({ post, onUpdate, onDelete, isSaved: initialSav
           </div>
 
           <div className="flex items-center gap-2">
-            <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${catInfo.color}`}>
-              {catInfo.label}
-            </span>
+            {isAnswered && post.category === "prayer" ? (
+              <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400">
+                <CheckCircle2 className="w-3 h-3" />
+                Answered
+              </span>
+            ) : (
+              <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${catInfo.color}`}>
+                {catInfo.label}
+              </span>
+            )}
 
             {/* Three-dot menu */}
             {session && (
@@ -225,6 +243,16 @@ export default function PostCard({ post, onUpdate, onDelete, isSaved: initialSav
                       >
                         <Flag className="w-4 h-4" />
                         {reported ? "Reported" : "Report post"}
+                      </button>
+                    )}
+
+                    {isOwner && post.category === "prayer" && (
+                      <button
+                        onClick={handleAnswer}
+                        className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-green-600 dark:text-green-400 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        {isAnswered ? "Unmark as Answered" : "Mark as Answered"}
                       </button>
                     )}
 

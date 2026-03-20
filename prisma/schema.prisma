@@ -87,6 +87,7 @@ model Post {
   category    String
   location    String?
   isAnonymous Boolean  @default(false) @map("is_anonymous")
+  isAnswered  Boolean  @default(false) @map("is_answered")
   imageUrl    String?  @map("image_url") @db.Text
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")

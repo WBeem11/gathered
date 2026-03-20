@@ -27,6 +27,7 @@ type Post = {
   category: string;
   location: string | null;
   isAnonymous: boolean;
+  isAnswered?: boolean;
   imageUrl?: string | null;
   createdAt: string;
   author: { id: string; name: string | null; location: string | null; profilePhoto: string | null };
