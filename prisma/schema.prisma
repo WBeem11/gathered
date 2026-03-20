@@ -77,6 +77,7 @@ model User {
   recommendations Recommendation[]
   endorsements    Endorsement[]
   churchAttendees ChurchAttendee[]
+  savedPosts      SavedPost[]
 }
 
 model Post {
@@ -90,9 +91,10 @@ model Post {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  author    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  comments  Comment[]
-  reactions Reaction[]
+  author     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments   Comment[]
+  reactions  Reaction[]
+  savedPosts SavedPost[]
 
   @@map("posts")
 }
@@ -314,6 +316,19 @@ model BusinessSubmission {
   createdAt       DateTime @default(now())
 
   @@map("business_submissions")
+}
+
+model SavedPost {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@map("saved_posts")
 }
 
 model Profile {

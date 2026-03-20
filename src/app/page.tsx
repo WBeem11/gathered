@@ -41,6 +41,7 @@ export default function HomePage() {
   const [feed, setFeed] = useState("foryou");
   const [category, setCategory] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [savedPostIds, setSavedPostIds] = useState<Set<string>>(new Set());
 
   const fetchPosts = useCallback(async () => {
     setLoading(true);
@@ -53,12 +54,27 @@ export default function HomePage() {
 
   useEffect(() => { fetchPosts(); }, [fetchPosts]);
 
+  useEffect(() => {
+    if (!session) return;
+    fetch("/api/saved-posts")
+      .then(r => r.ok ? r.json() : [])
+      .then((saved: Post[]) => setSavedPostIds(new Set(saved.map(p => p.id))));
+  }, [session]);
+
   function handleNewPost(post: unknown) {
     setPosts((prev) => [post as Post, ...prev]);
   }
 
   function handleDeletePost(id: string) {
     setPosts((prev) => prev.filter((p) => p.id !== id));
+  }
+
+  function handleToggleSave(postId: string, nowSaved: boolean) {
+    setSavedPostIds((prev) => {
+      const next = new Set(prev);
+      if (nowSaved) next.add(postId); else next.delete(postId);
+      return next;
+    });
   }
 
   const EMPTY_MESSAGES: Record<string, { icon: string; text: string }> = {
@@ -126,7 +142,7 @@ export default function HomePage() {
       ) : (
         <div className="space-y-4">
           {posts.map((post) => (
-            <PostCard key={post.id} post={post} onUpdate={fetchPosts} onDelete={handleDeletePost} />
+            <PostCard key={post.id} post={post} onUpdate={fetchPosts} onDelete={handleDeletePost} isSaved={savedPostIds.has(post.id)} onToggleSave={handleToggleSave} />
           ))}
         </div>
       )}

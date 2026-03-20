@@ -6,7 +6,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, MapPin, Send, MoreHorizontal, Trash2, Flag, Link as LinkIcon, Check } from "lucide-react";
+import { MessageCircle, MapPin, Send, MoreHorizontal, Trash2, Flag, Link as LinkIcon, Check, Bookmark } from "lucide-react";
 import Link from "next/link";
 
 interface Author {
@@ -45,7 +45,13 @@ const CATEGORY_LABELS: Record<string, { label: string; color: string }> = {
   recommendation: { label: "Rec",         color: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300" },
 };
 
-export default function PostCard({ post, onUpdate, onDelete }: { post: Post; onUpdate?: () => void; onDelete?: (id: string) => void }) {
+export default function PostCard({ post, onUpdate, onDelete, isSaved: initialSaved = false, onToggleSave }: {
+  post: Post;
+  onUpdate?: () => void;
+  onDelete?: (id: string) => void;
+  isSaved?: boolean;
+  onToggleSave?: (postId: string, saved: boolean) => void;
+}) {
   const { data: session } = useSession();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
@@ -56,6 +62,7 @@ export default function PostCard({ post, onUpdate, onDelete }: { post: Post; onU
   const [copied, setCopied] = useState(false);
   const [reported, setReported] = useState(false);
   const [deleted, setDeleted] = useState(false);
+  const [saved, setSaved] = useState(initialSaved);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const isOwner = session?.user?.id === post.author.id;
@@ -125,6 +132,16 @@ export default function PostCard({ post, onUpdate, onDelete }: { post: Post; onU
       body: JSON.stringify({ reason }),
     });
     setReported(true);
+  }
+
+  async function handleSave() {
+    if (!session) return;
+    const res = await fetch(`/api/posts/${post.id}/save`, { method: "POST" });
+    if (res.ok) {
+      const { saved: nowSaved } = await res.json();
+      setSaved(nowSaved);
+      onToggleSave?.(post.id, nowSaved);
+    }
   }
 
   function handleShare() {
@@ -260,6 +277,20 @@ export default function PostCard({ post, onUpdate, onDelete }: { post: Post; onU
             <MessageCircle className="w-4 h-4" />
             <span>{localComments.length > 0 ? `${localComments.length} comment${localComments.length !== 1 ? "s" : ""}` : "Comment"}</span>
           </button>
+
+          {session && (
+            <button
+              onClick={handleSave}
+              className={`ml-auto p-1.5 rounded-full transition-colors ${
+                saved
+                  ? "text-navy dark:text-white"
+                  : "text-gray-400 dark:text-gray-500 hover:text-navy dark:hover:text-white"
+              }`}
+              title={saved ? "Remove bookmark" : "Save post"}
+            >
+              <Bookmark className={`w-4 h-4 ${saved ? "fill-current" : ""}`} />
+            </button>
+          )}
         </div>
       </div>
 

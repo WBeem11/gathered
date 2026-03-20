@@ -2,9 +2,25 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Calendar } from "lucide-react";
+import { MapPin, Calendar, Bookmark } from "lucide-react";
 import { format } from "date-fns";
+import PostCard from "@/components/feed/PostCard";
+
+type Post = {
+  id: string;
+  content: string;
+  category: string;
+  location: string | null;
+  isAnonymous: boolean;
+  imageUrl?: string | null;
+  createdAt: string;
+  author: { id: string; name: string | null; location: string | null; profilePhoto: string | null };
+  comments: { id: string; content: string; createdAt: string; author: { id: string; name: string | null; profilePhoto: string | null } }[];
+  reactions: { id: string; userId: string; type: string }[];
+  _count: { comments: number; reactions: number };
+};
 
 type UserProfile = {
   id: string;
@@ -18,8 +34,15 @@ type UserProfile = {
 
 export default function ProfilePage() {
   const { id } = useParams<{ id: string }>();
+  const { data: session } = useSession();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [savedPosts, setSavedPosts] = useState<Post[]>([]);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [tab, setTab] = useState<"overview" | "saved">("overview");
   const [loading, setLoading] = useState(true);
+  const [savedLoading, setSavedLoading] = useState(false);
+
+  const isOwnProfile = session?.user?.id === id;
 
   useEffect(() => {
     fetch(`/api/profile/${id}`)
@@ -27,6 +50,25 @@ export default function ProfilePage() {
       .then(setProfile)
       .finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    if (tab !== "saved" || !isOwnProfile) return;
+    setSavedLoading(true);
+    fetch("/api/saved-posts")
+      .then(r => r.ok ? r.json() : [])
+      .then((posts: Post[]) => {
+        setSavedPosts(posts);
+        setSavedIds(new Set(posts.map(p => p.id)));
+      })
+      .finally(() => setSavedLoading(false));
+  }, [tab, isOwnProfile]);
+
+  function handleToggleSave(postId: string, nowSaved: boolean) {
+    if (!nowSaved) {
+      setSavedPosts(prev => prev.filter(p => p.id !== postId));
+      setSavedIds(prev => { const s = new Set(prev); s.delete(postId); return s; });
+    }
+  }
 
   if (loading) {
     return (
@@ -39,20 +81,16 @@ export default function ProfilePage() {
   }
 
   if (!profile) {
-    return (
-      <div className="text-center py-16 text-navy/40 dark:text-gray-500">
-        User not found
-      </div>
-    );
+    return <div className="text-center py-16 text-navy/40 dark:text-gray-500">User not found</div>;
   }
 
   const initials = (profile.name ?? "?").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
   const totalPosts = profile._count.posts;
 
   return (
-    <div className="max-w-sm mx-auto px-4 py-10">
-      <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl shadow-sm border border-navy/5 dark:border-white/10 p-8 text-center">
-        {/* Avatar */}
+    <div className="max-w-lg mx-auto px-4 py-10">
+      {/* Profile card */}
+      <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl shadow-sm border border-navy/5 dark:border-white/10 p-8 text-center mb-6">
         <Avatar className="w-20 h-20 border-4 border-cream dark:border-white/10 shadow mx-auto mb-4">
           <AvatarImage src={profile.profilePhoto ?? ""} />
           <AvatarFallback className="bg-navy text-cream text-2xl font-bold font-playfair">
@@ -60,12 +98,10 @@ export default function ProfilePage() {
           </AvatarFallback>
         </Avatar>
 
-        {/* Name */}
         <h1 className="font-playfair text-2xl font-bold text-navy dark:text-white">
           {profile.name ?? "Anonymous"}
         </h1>
 
-        {/* Neighborhood */}
         {profile.neighborhood && (
           <p className="flex items-center justify-center gap-1 text-sm text-gray-500 dark:text-gray-400 mt-1">
             <MapPin className="w-3.5 h-3.5" />
@@ -73,16 +109,13 @@ export default function ProfilePage() {
           </p>
         )}
 
-        {/* Member since */}
         <p className="flex items-center justify-center gap-1 text-sm text-gray-400 dark:text-gray-500 mt-1">
           <Calendar className="w-3.5 h-3.5" />
           Member since {format(new Date(profile.createdAt), "MMMM yyyy")}
         </p>
 
-        {/* Divider */}
         <div className="border-t border-gray-100 dark:border-white/10 my-5" />
 
-        {/* Stats */}
         <div className="flex justify-center gap-8 text-center">
           <div>
             <p className="text-xl font-bold text-navy dark:text-white">{totalPosts}</p>
@@ -98,6 +131,59 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Saved tab — only visible on own profile */}
+      {isOwnProfile && (
+        <>
+          <div className="flex gap-1 bg-white dark:bg-[#1e1e1e] rounded-xl p-1 shadow-sm border border-gray-100 dark:border-white/10 mb-4">
+            <button
+              onClick={() => setTab("overview")}
+              className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                tab === "overview"
+                  ? "bg-navy dark:bg-white text-cream dark:text-[#262626]"
+                  : "text-navy/50 dark:text-gray-400 hover:text-navy dark:hover:text-white"
+              }`}
+            >
+              Overview
+            </button>
+            <button
+              onClick={() => setTab("saved")}
+              className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-1.5 ${
+                tab === "saved"
+                  ? "bg-navy dark:bg-white text-cream dark:text-[#262626]"
+                  : "text-navy/50 dark:text-gray-400 hover:text-navy dark:hover:text-white"
+              }`}
+            >
+              <Bookmark className="w-3.5 h-3.5" />
+              Saved
+            </button>
+          </div>
+
+          {tab === "saved" && (
+            <div className="space-y-4">
+              {savedLoading ? (
+                [1, 2, 3].map(i => (
+                  <div key={i} className="bg-white dark:bg-[#1e1e1e] rounded-2xl h-36 animate-pulse" />
+                ))
+              ) : savedPosts.length === 0 ? (
+                <div className="text-center py-12">
+                  <Bookmark className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                  <p className="text-gray-500 dark:text-gray-400">No saved posts yet</p>
+                </div>
+              ) : (
+                savedPosts.map(post => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    isSaved={savedIds.has(post.id)}
+                    onToggleSave={handleToggleSave}
+                  />
+                ))
+              )}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
