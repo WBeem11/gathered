@@ -301,6 +301,10 @@ export default function Navbar() {
 function GatheredLogo() {
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src="/logo.png" alt="Gathered" className="w-8 h-8 flex-shrink-0 rounded-lg object-cover" />
+    <img
+      src="/logo.png"
+      alt="Gathered"
+      className="w-8 h-8 flex-shrink-0 object-contain invert opacity-60 dark:invert-0 dark:opacity-100"
+    />
   );
 }
