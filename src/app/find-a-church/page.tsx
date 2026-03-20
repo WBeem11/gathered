@@ -92,15 +92,15 @@ export default function FindAChurchPage() {
       {/* Hero */}
       <div className="text-center mb-10">
         <div className="text-5xl mb-3">⛪</div>
-        <h1 className="font-playfair text-3xl md:text-4xl font-bold text-navy mb-3">
+        <h1 className="font-playfair text-3xl md:text-4xl font-bold text-navy dark:text-white mb-3">
           Find a Church Home
         </h1>
-        <p className="text-navy/70 max-w-xl mx-auto leading-relaxed">
+        <p className="text-navy/70 dark:text-gray-300 max-w-xl mx-auto leading-relaxed">
           Finding a church home is one of the best things you can do for your faith and family.
           Explore these wonderful Twin Cities congregations and find where you belong.
         </p>
-        <div className="mt-4 inline-block bg-gold/10 border border-gold/20 px-5 py-3 rounded-xl">
-          <p className="text-sm text-navy/70 italic">
+        <div className="mt-4 inline-block bg-gold/10 dark:bg-gold/5 border border-gold/20 dark:border-gold/10 px-5 py-3 rounded-xl">
+          <p className="text-sm text-navy/70 dark:text-gray-300 italic">
             &ldquo;And let us not neglect our meeting together, as some people do, but encourage one another.&rdquo; — Hebrews 10:25
           </p>
         </div>
@@ -133,7 +133,7 @@ export default function FindAChurchPage() {
 
       {loading ? (
         <div className="grid gap-6 md:grid-cols-2">
-          {[1,2,3,4].map(i => <div key={i} className="bg-white rounded-2xl h-64 animate-pulse" />)}
+          {[1,2,3,4].map(i => <div key={i} className="bg-white dark:bg-[#1e1e1e] rounded-2xl h-64 animate-pulse" />)}
         </div>
       ) : (
         <>
@@ -145,29 +145,29 @@ export default function FindAChurchPage() {
               </div>
               <div className="grid gap-6 md:grid-cols-2">
                 {churches.filter(c => c.featuredPartner).map((church) => (
-                  <Card key={church.id} className="border-2 border-gold/40 shadow-sm bg-gradient-to-br from-white to-gold/5 overflow-hidden hover:shadow-md transition-shadow">
+                  <Card key={church.id} className="border-2 border-gold/40 shadow-sm bg-gradient-to-br from-white to-gold/5 dark:from-[#1e1e1e] dark:to-gold/10 overflow-hidden hover:shadow-md transition-shadow">
                     <div className="h-2 bg-gradient-to-r from-gold to-gold/60" />
                     <div className="p-5">
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div>
-                          <h3 className="font-playfair font-bold text-navy text-xl leading-tight">{church.name}</h3>
+                          <h3 className="font-playfair font-bold text-navy dark:text-white text-xl leading-tight">{church.name}</h3>
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
                             <span className="text-xs bg-gold/20 text-gold px-2 py-0.5 rounded-full font-bold">Founding Partner</span>
                             {church.denomination && (
-                              <Badge variant="outline" className="text-xs border-navy/20 text-navy/70">{church.denomination}</Badge>
+                              <Badge variant="outline" className="text-xs border-navy/20 dark:border-white/20 text-navy/70 dark:text-gray-300">{church.denomination}</Badge>
                             )}
                           </div>
                         </div>
                       </div>
-                      {church.description && <p className="text-sm text-navy/70 mt-2">{church.description}</p>}
+                      {church.description && <p className="text-sm text-navy/70 dark:text-gray-300 mt-2">{church.description}</p>}
                       {church.neighborhood && (
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground mt-2"><MapPin className="w-3 h-3" />{church.neighborhood}</span>
+                        <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mt-2"><MapPin className="w-3 h-3" />{church.neighborhood}</span>
                       )}
                     </div>
                   </Card>
                 ))}
               </div>
-              <div className="border-t border-cream my-6" />
+              <div className="border-t border-cream dark:border-white/10 my-6" />
             </div>
           )}
         <div className="grid gap-6 md:grid-cols-2">
@@ -176,17 +176,17 @@ export default function FindAChurchPage() {
               ? church.attendees.some((a) => a.user.id === session.user.id)
               : false;
             return (
-              <Card key={church.id} className="border-0 shadow-sm bg-white overflow-hidden hover:shadow-md transition-shadow">
+              <Card key={church.id} className="border-0 shadow-sm bg-white dark:bg-[#1e1e1e] overflow-hidden hover:shadow-md transition-shadow">
                 {/* Color header */}
                 <div className="h-2 bg-gradient-to-r from-navy to-navy-light" />
 
                 <div className="p-5">
                   <div className="flex items-start justify-between gap-2 mb-3">
                     <div>
-                      <h3 className="font-playfair font-bold text-navy text-xl leading-tight">{church.name}</h3>
+                      <h3 className="font-playfair font-bold text-navy dark:text-white text-xl leading-tight">{church.name}</h3>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
                         {church.denomination && (
-                          <Badge variant="outline" className="text-xs border-navy/20 text-navy/70">
+                          <Badge variant="outline" className="text-xs border-navy/20 dark:border-white/20 text-navy/70 dark:text-gray-300">
                             {church.denomination}
                           </Badge>
                         )}
@@ -201,10 +201,10 @@ export default function FindAChurchPage() {
                   </div>
 
                   {church.description && (
-                    <p className="text-sm text-navy/70 mb-4 leading-relaxed">{church.description}</p>
+                    <p className="text-sm text-navy/70 dark:text-gray-300 mb-4 leading-relaxed">{church.description}</p>
                   )}
 
-                  <div className="space-y-1.5 text-sm text-muted-foreground mb-4">
+                  <div className="space-y-1.5 text-sm text-gray-500 dark:text-gray-400 mb-4">
                     {church.address && (
                       <p className="flex items-center gap-2"><MapPin className="w-4 h-4 flex-shrink-0 text-gold" />{church.address}</p>
                     )}
@@ -221,8 +221,8 @@ export default function FindAChurchPage() {
 
                   {/* Attendees */}
                   {church._count.attendees > 0 && (
-                    <div className="mb-4 pb-3 border-b border-cream">
-                      <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+                    <div className="mb-4 pb-3 border-b border-cream dark:border-white/10">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1">
                         <Users className="w-3.5 h-3.5" />
                         {church._count.attendees} community member{church._count.attendees !== 1 ? "s" : ""} attend here
                       </p>
@@ -236,7 +236,7 @@ export default function FindAChurchPage() {
                           </Avatar>
                         ))}
                         {church._count.attendees > 8 && (
-                          <div className="w-7 h-7 rounded-full bg-cream border-2 border-white flex items-center justify-center text-xs text-navy/60 font-medium">
+                          <div className="w-7 h-7 rounded-full bg-cream dark:bg-[#262626] border-2 border-white dark:border-[#1e1e1e] flex items-center justify-center text-xs text-navy/60 dark:text-gray-400 font-medium">
                             +{church._count.attendees - 8}
                           </div>
                         )}

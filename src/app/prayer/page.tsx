@@ -76,10 +76,10 @@ export default function PrayerPage() {
       {/* Hero */}
       <div className="text-center mb-8">
         <div className="text-5xl mb-3">🙏</div>
-        <h1 className="font-playfair text-3xl md:text-4xl font-bold text-navy mb-2">
+        <h1 className="font-playfair text-3xl md:text-4xl font-bold text-navy dark:text-white mb-2">
           Prayer Requests
         </h1>
-        <p className="text-navy/60 max-w-md mx-auto">
+        <p className="text-navy/60 dark:text-gray-400 max-w-md mx-auto">
           Share your needs. We believe in the power of prayer and standing together.
         </p>
       </div>
@@ -90,13 +90,13 @@ export default function PrayerPage() {
           {!showForm ? (
             <button
               onClick={() => setShowForm(true)}
-              className="w-full bg-white rounded-2xl border border-navy/10 p-4 text-left text-navy/50 hover:border-gold/40 transition-colors shadow-sm"
+              className="w-full bg-white dark:bg-[#1e1e1e] rounded-2xl border border-navy/10 dark:border-white/10 p-4 text-left text-navy/50 dark:text-gray-400 hover:border-gold/40 transition-colors shadow-sm"
             >
               Share a prayer request with the community...
             </button>
           ) : (
-            <Card className="p-5 border-0 shadow-sm bg-white">
-              <h3 className="font-playfair text-lg font-semibold text-navy mb-3">Share a Prayer Request</h3>
+            <Card className="p-5 border-0 shadow-sm bg-white dark:bg-[#1e1e1e]">
+              <h3 className="font-playfair text-lg font-semibold text-navy dark:text-white mb-3">Share a Prayer Request</h3>
               <form onSubmit={handleSubmit} className="space-y-3">
                 <div className="flex gap-3">
                   <Avatar className="w-9 h-9 border-2 border-cream flex-shrink-0">
@@ -113,7 +113,7 @@ export default function PrayerPage() {
                   />
                 </div>
                 <div className="flex items-center justify-between flex-wrap gap-3 pl-12">
-                  <label className="flex items-center gap-1.5 text-sm text-navy/70 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-sm text-navy/70 dark:text-gray-300 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={isAnonymous}
@@ -141,8 +141,8 @@ export default function PrayerPage() {
           )}
         </div>
       ) : (
-        <Card className="p-5 mb-6 border-0 shadow-sm text-center bg-white">
-          <p className="text-navy/70 mb-3">Sign in to share a prayer request</p>
+        <Card className="p-5 mb-6 border-0 shadow-sm text-center bg-white dark:bg-[#1e1e1e]">
+          <p className="text-navy/70 dark:text-gray-300 mb-3">Sign in to share a prayer request</p>
           <div className="flex justify-center gap-3">
             <Link href="/sign-in">
               <Button variant="outline" className="border-navy/30 text-navy">Sign In</Button>
@@ -156,7 +156,7 @@ export default function PrayerPage() {
 
       {/* Count */}
       {!loading && (
-        <p className="text-sm text-navy/50 mb-4">
+        <p className="text-sm text-navy/50 dark:text-gray-500 mb-4">
           {posts.length} prayer request{posts.length !== 1 ? "s" : ""}
         </p>
       )}
@@ -165,13 +165,13 @@ export default function PrayerPage() {
       {loading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white rounded-2xl h-36 animate-pulse" />
+            <div key={i} className="bg-white dark:bg-[#1e1e1e] rounded-2xl h-36 animate-pulse" />
           ))}
         </div>
       ) : posts.length === 0 ? (
-        <div className="text-center py-16 text-navy/40">
+        <div className="text-center py-16 text-navy/40 dark:text-gray-500">
           <p className="text-4xl mb-3">🙏</p>
-          <p className="font-playfair text-lg text-navy/60">No prayer requests yet</p>
+          <p className="font-playfair text-lg text-navy/60 dark:text-gray-400">No prayer requests yet</p>
           <p className="text-sm mt-1">Be the first to share</p>
         </div>
       ) : (
