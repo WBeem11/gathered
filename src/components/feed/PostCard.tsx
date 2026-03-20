@@ -156,7 +156,13 @@ export default function PostCard({ post, onUpdate, onDelete }: { post: Post; onU
               <AvatarFallback className="bg-navy text-cream text-sm font-bold">{initials}</AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-semibold text-navy dark:text-white text-sm">{authorName}</p>
+              {post.isAnonymous ? (
+                <p className="font-semibold text-navy dark:text-white text-sm">{authorName}</p>
+              ) : (
+                <Link href={`/profile/${post.author.id}`} className="font-semibold text-navy dark:text-white text-sm hover:underline">
+                  {authorName}
+                </Link>
+              )}
               <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                 {!post.isAnonymous && post.author.location && (
                   <span className="flex items-center gap-0.5">

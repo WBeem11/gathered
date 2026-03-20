@@ -2,36 +2,22 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, Calendar, Church } from "lucide-react";
+import { MapPin, Calendar } from "lucide-react";
 import { format } from "date-fns";
-import PostCard from "@/components/feed/PostCard";
 
 type UserProfile = {
   id: string;
   name: string | null;
-  email: string | null;
-  location: string | null;
+  neighborhood: string | null;
   profilePhoto: string | null;
-  bio: string | null;
   createdAt: string;
-  church: { id: string; name: string } | null;
-  posts: {
-    id: string; content: string; category: string; location: string | null;
-    isAnonymous: boolean; createdAt: string;
-    author: { id: string; name: string | null; location: string | null; profilePhoto: string | null };
-    comments: { id: string; content: string; createdAt: string; author: { id: string; name: string | null; profilePhoto: string | null } }[];
-    reactions: { id: string; userId: string; type: string }[];
-    _count: { comments: number; reactions: number };
-  }[];
+  prayerCount: number;
+  _count: { posts: number; reactions: number };
 };
 
 export default function ProfilePage() {
   const { id } = useParams<{ id: string }>();
-  const { data: session } = useSession();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -43,58 +29,75 @@ export default function ProfilePage() {
   }, [id]);
 
   if (loading) {
-    return <div className="container mx-auto px-4 py-12 text-center text-navy/40 animate-pulse">Loading profile...</div>;
+    return (
+      <div className="max-w-sm mx-auto px-4 py-16 text-center">
+        <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-[#2a2a2a] animate-pulse mx-auto mb-4" />
+        <div className="h-5 bg-gray-200 dark:bg-[#2a2a2a] rounded animate-pulse w-32 mx-auto mb-2" />
+        <div className="h-4 bg-gray-200 dark:bg-[#2a2a2a] rounded animate-pulse w-24 mx-auto" />
+      </div>
+    );
   }
+
   if (!profile) {
-    return <div className="container mx-auto px-4 py-12 text-center text-navy/40">User not found</div>;
+    return (
+      <div className="text-center py-16 text-navy/40 dark:text-gray-500">
+        User not found
+      </div>
+    );
   }
 
   const initials = (profile.name ?? "?").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
-  const isOwnProfile = session?.user?.id === id;
+  const totalPosts = profile._count.posts;
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-2xl">
-      <Card className="p-6 border-0 shadow-sm bg-white mb-6">
-        <div className="flex items-start gap-5">
-          <Avatar className="w-20 h-20 border-4 border-cream shadow">
-            <AvatarImage src={profile.profilePhoto ?? ""} />
-            <AvatarFallback className="bg-navy text-cream text-2xl font-bold font-playfair">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <h1 className="font-playfair text-2xl font-bold text-navy">{profile.name}</h1>
-            <div className="flex flex-wrap gap-3 mt-2 text-sm text-muted-foreground">
-              {profile.location && (
-                <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{profile.location}</span>
-              )}
-              {profile.church && (
-                <span className="flex items-center gap-1"><Church className="w-4 h-4" />{profile.church.name}</span>
-              )}
-              <span className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />Joined {format(new Date(profile.createdAt), "MMMM yyyy")}
-              </span>
-            </div>
-            {profile.bio && <p className="text-navy/70 mt-3">{profile.bio}</p>}
-            {isOwnProfile && (
-              <Badge className="mt-2 bg-gold/10 text-gold border-gold/20">Your Profile</Badge>
-            )}
+    <div className="max-w-sm mx-auto px-4 py-10">
+      <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl shadow-sm border border-navy/5 dark:border-white/10 p-8 text-center">
+        {/* Avatar */}
+        <Avatar className="w-20 h-20 border-4 border-cream dark:border-white/10 shadow mx-auto mb-4">
+          <AvatarImage src={profile.profilePhoto ?? ""} />
+          <AvatarFallback className="bg-navy text-cream text-2xl font-bold font-playfair">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
+
+        {/* Name */}
+        <h1 className="font-playfair text-2xl font-bold text-navy dark:text-white">
+          {profile.name ?? "Anonymous"}
+        </h1>
+
+        {/* Neighborhood */}
+        {profile.neighborhood && (
+          <p className="flex items-center justify-center gap-1 text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <MapPin className="w-3.5 h-3.5" />
+            {profile.neighborhood}
+          </p>
+        )}
+
+        {/* Member since */}
+        <p className="flex items-center justify-center gap-1 text-sm text-gray-400 dark:text-gray-500 mt-1">
+          <Calendar className="w-3.5 h-3.5" />
+          Member since {format(new Date(profile.createdAt), "MMMM yyyy")}
+        </p>
+
+        {/* Divider */}
+        <div className="border-t border-gray-100 dark:border-white/10 my-5" />
+
+        {/* Stats */}
+        <div className="flex justify-center gap-8 text-center">
+          <div>
+            <p className="text-xl font-bold text-navy dark:text-white">{totalPosts}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">post{totalPosts !== 1 ? "s" : ""}</p>
+          </div>
+          <div>
+            <p className="text-xl font-bold text-navy dark:text-white">{profile.prayerCount}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">prayer{profile.prayerCount !== 1 ? "s" : ""}</p>
+          </div>
+          <div>
+            <p className="text-xl font-bold text-navy dark:text-white">{profile._count.reactions}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">amens given</p>
           </div>
         </div>
-      </Card>
-
-      <h2 className="font-playfair text-xl font-bold text-navy mb-4">Posts</h2>
-      {profile.posts.length === 0 ? (
-        <div className="text-center py-12 text-navy/40">
-          <p>No posts yet</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {profile.posts.filter(p => !p.isAnonymous).map(post => (
-            <PostCard key={post.id} post={post} />
-          ))}
-        </div>
-      )}
+      </div>
     </div>
   );
 }
