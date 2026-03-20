@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, MapPin, Send } from "lucide-react";
+import { MessageCircle, MapPin, Send, MoreHorizontal, Trash2, Flag, Link as LinkIcon, Check } from "lucide-react";
 import Link from "next/link";
 
 interface Author {
@@ -45,13 +45,30 @@ const CATEGORY_LABELS: Record<string, { label: string; color: string }> = {
   recommendation: { label: "Rec",         color: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300" },
 };
 
-export default function PostCard({ post, onUpdate }: { post: Post; onUpdate?: () => void }) {
+export default function PostCard({ post, onUpdate, onDelete }: { post: Post; onUpdate?: () => void; onDelete?: (id: string) => void }) {
   const { data: session } = useSession();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
   const [localReactions, setLocalReactions] = useState(post.reactions);
   const [localComments, setLocalComments] = useState(post.comments);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [reported, setReported] = useState(false);
+  const [deleted, setDeleted] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const isOwner = session?.user?.id === post.author.id;
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   const hasReacted = session?.user?.id
     ? localReactions.some((r) => r.userId === session.user.id)
@@ -63,10 +80,7 @@ export default function PostCard({ post, onUpdate }: { post: Post; onUpdate?: ()
     if (res.ok) {
       const data = await res.json();
       if (data.reacted) {
-        setLocalReactions((prev) => [
-          ...prev,
-          { id: Date.now().toString(), userId: session.user.id, type: "amen" },
-        ]);
+        setLocalReactions((prev) => [...prev, { id: Date.now().toString(), userId: session.user.id, type: "amen" }]);
       } else {
         setLocalReactions((prev) => prev.filter((r) => r.userId !== session.user.id));
       }
@@ -77,13 +91,11 @@ export default function PostCard({ post, onUpdate }: { post: Post; onUpdate?: ()
     e.preventDefault();
     if (!session || !commentText.trim()) return;
     setSubmittingComment(true);
-
     const res = await fetch(`/api/posts/${post.id}/comments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content: commentText }),
     });
-
     if (res.ok) {
       const comment = await res.json();
       setLocalComments((prev) => [...prev, comment]);
@@ -92,6 +104,39 @@ export default function PostCard({ post, onUpdate }: { post: Post; onUpdate?: ()
     }
     setSubmittingComment(false);
   }
+
+  async function handleDelete() {
+    if (!confirm("Delete this post?")) return;
+    setMenuOpen(false);
+    const res = await fetch(`/api/posts/${post.id}`, { method: "DELETE" });
+    if (res.ok) {
+      setDeleted(true);
+      onDelete?.(post.id);
+    }
+  }
+
+  async function handleReport() {
+    setMenuOpen(false);
+    const reason = prompt("Why are you reporting this post? (optional)");
+    if (reason === null) return; // user cancelled
+    await fetch(`/api/posts/${post.id}/report`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason }),
+    });
+    setReported(true);
+  }
+
+  function handleShare() {
+    setMenuOpen(false);
+    const url = `${window.location.origin}/?post=${post.id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  if (deleted) return null;
 
   const authorName = post.isAnonymous ? "Anonymous" : post.author.name ?? "Someone";
   const initials = post.isAnonymous
@@ -108,9 +153,7 @@ export default function PostCard({ post, onUpdate }: { post: Post; onUpdate?: ()
           <div className="flex items-center gap-3">
             <Avatar className="w-10 h-10 border-2 border-cream dark:border-white/10">
               {!post.isAnonymous && <AvatarImage src={post.author.profilePhoto ?? ""} />}
-              <AvatarFallback className="bg-navy text-cream text-sm font-bold">
-                {initials}
-              </AvatarFallback>
+              <AvatarFallback className="bg-navy text-cream text-sm font-bold">{initials}</AvatarFallback>
             </Avatar>
             <div>
               <p className="font-semibold text-navy dark:text-white text-sm">{authorName}</p>
@@ -125,9 +168,57 @@ export default function PostCard({ post, onUpdate }: { post: Post; onUpdate?: ()
               </div>
             </div>
           </div>
-          <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${catInfo.color}`}>
-            {catInfo.label}
-          </span>
+
+          <div className="flex items-center gap-2">
+            <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${catInfo.color}`}>
+              {catInfo.label}
+            </span>
+
+            {/* Three-dot menu */}
+            {session && (
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setMenuOpen(!menuOpen)}
+                  className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-navy dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
+
+                {menuOpen && (
+                  <div className="absolute right-0 top-8 z-50 bg-white dark:bg-[#2a2a2a] border border-gray-200 dark:border-white/10 rounded-xl shadow-lg py-1 w-44">
+                    <button
+                      onClick={handleShare}
+                      className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
+                    >
+                      {copied ? <Check className="w-4 h-4 text-green-500" /> : <LinkIcon className="w-4 h-4" />}
+                      {copied ? "Link copied!" : "Copy link"}
+                    </button>
+
+                    {!isOwner && (
+                      <button
+                        onClick={handleReport}
+                        disabled={reported}
+                        className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-orange-600 dark:text-orange-400 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
+                      >
+                        <Flag className="w-4 h-4" />
+                        {reported ? "Reported" : "Report post"}
+                      </button>
+                    )}
+
+                    {isOwner && (
+                      <button
+                        onClick={handleDelete}
+                        className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete post
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Content */}
@@ -138,11 +229,7 @@ export default function PostCard({ post, onUpdate }: { post: Post; onUpdate?: ()
         {/* Image */}
         {post.imageUrl && (
           <div className={post.content ? "mt-3" : ""}>
-            <img
-              src={post.imageUrl}
-              alt="Post image"
-              className="w-full rounded-xl object-cover max-h-96"
-            />
+            <img src={post.imageUrl} alt="Post image" className="w-full rounded-xl object-cover max-h-96" />
           </div>
         )}
 
