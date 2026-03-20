@@ -46,24 +46,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { content, category, location, isAnonymous, recaptchaToken } = await req.json();
+  const { content, category, location, isAnonymous, imageUrl, recaptchaToken } = await req.json();
 
   if (recaptchaToken) {
     const ok = await verifyRecaptcha(recaptchaToken, "create_prayer");
     if (!ok) return NextResponse.json({ error: "Request failed security check" }, { status: 400 });
   }
 
-  if (!content || !category) {
-    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  if (!content?.trim() && !imageUrl) {
+    return NextResponse.json({ error: "Post must have text or an image" }, { status: 400 });
+  }
+
+  if (!category) {
+    return NextResponse.json({ error: "Missing category" }, { status: 400 });
   }
 
   const post = await prisma.post.create({
     data: {
       userId: session.user.id,
-      content,
+      content: content?.trim() || "",
       category,
       location: location || session.user.neighborhood || null,
       isAnonymous: isAnonymous ?? false,
+      imageUrl: imageUrl || null,
     },
     include: {
       author: { select: { id: true, name: true, neighborhood: true, profilePhoto: true } },

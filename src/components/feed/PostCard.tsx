@@ -29,6 +29,7 @@ interface Post {
   category: string;
   location: string | null;
   isAnonymous: boolean;
+  imageUrl?: string | null;
   createdAt: string;
   author: Author;
   comments: Comment[];
@@ -130,7 +131,20 @@ export default function PostCard({ post, onUpdate }: { post: Post; onUpdate?: ()
         </div>
 
         {/* Content */}
-        <p className="text-navy/80 dark:text-gray-100 leading-relaxed">{post.content}</p>
+        {post.content && (
+          <p className="text-navy/80 dark:text-gray-100 leading-relaxed">{post.content}</p>
+        )}
+
+        {/* Image */}
+        {post.imageUrl && (
+          <div className={post.content ? "mt-3" : ""}>
+            <img
+              src={post.imageUrl}
+              alt="Post image"
+              className="w-full rounded-xl object-cover max-h-96"
+            />
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex items-center gap-3 mt-4 pt-3 border-t border-cream dark:border-white/10">
