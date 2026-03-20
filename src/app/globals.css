@@ -40,8 +40,8 @@
   --radius-xl: calc(var(--radius) + 4px);
 
   /* Fonts */
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-playfair: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Lato', system-ui, sans-serif;
+  --font-playfair: 'Merriweather', Georgia, serif;
 }
 
 @layer base {
@@ -74,11 +74,22 @@
   body {
     @apply bg-background text-foreground;
     background-color: #F5F7F5;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Lato', system-ui, sans-serif;
+    font-weight: 400;
   }
 
   h1, h2, h3 {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: 'Merriweather', Georgia, serif;
+    font-weight: 700;
+  }
+
+  button, [role="button"] {
+    font-family: 'Lato', system-ui, sans-serif;
+    font-weight: 700;
+  }
+
+  time, .text-xs {
+    font-weight: 300;
   }
 }
 
