@@ -15,27 +15,69 @@ function normalizePost(post: {
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const category = searchParams.get("category");
-  const location = searchParams.get("location");
+  const feed = searchParams.get("feed") ?? "recent"; // recent | nearby | trending | foryou
 
-  const posts = await prisma.post.findMany({
-    where: {
-      ...(category && category !== "all" ? { category } : {}),
-      ...(location ? { location } : {}),
+  const include = {
+    author: { select: { id: true, name: true, neighborhood: true, profilePhoto: true } },
+    comments: {
+      include: { author: { select: { id: true, name: true, profilePhoto: true } } },
+      orderBy: { createdAt: "asc" as const },
     },
-    include: {
-      author: { select: { id: true, name: true, neighborhood: true, profilePhoto: true } },
-      comments: {
-        include: {
-          author: { select: { id: true, name: true, profilePhoto: true } },
-        },
-        orderBy: { createdAt: "asc" },
-      },
-      reactions: true,
-      _count: { select: { comments: true, reactions: true } },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  });
+    reactions: true,
+    _count: { select: { comments: true, reactions: true } },
+  };
+
+  const categoryWhere = category && category !== "all" ? { category } : {};
+
+  // For nearby/foryou we need the user's neighborhood
+  let userNeighborhood: string | null = null;
+  if (feed === "nearby" || feed === "foryou") {
+    const session = await getServerSession(authOptions);
+    if (session?.user?.id) {
+      const u = await prisma.user.findUnique({ where: { id: session.user.id }, select: { neighborhood: true } });
+      userNeighborhood = u?.neighborhood ?? null;
+    }
+  }
+
+  let posts;
+
+  if (feed === "trending") {
+    // Sort by reactions + comments count in last 30 days
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    posts = await prisma.post.findMany({
+      where: { ...categoryWhere, createdAt: { gte: since } },
+      include,
+      orderBy: [{ reactions: { _count: "desc" } }, { comments: { _count: "desc" } }, { createdAt: "desc" }],
+      take: 50,
+    });
+
+  } else if (feed === "nearby" && userNeighborhood) {
+    // Posts from authors in the same neighborhood
+    posts = await prisma.post.findMany({
+      where: { ...categoryWhere, author: { neighborhood: userNeighborhood } },
+      include,
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
+
+  } else if (feed === "foryou" && userNeighborhood) {
+    // Nearby posts + boosted by engagement
+    posts = await prisma.post.findMany({
+      where: { ...categoryWhere, author: { neighborhood: userNeighborhood } },
+      include,
+      orderBy: [{ reactions: { _count: "desc" } }, { comments: { _count: "desc" } }, { createdAt: "desc" }],
+      take: 50,
+    });
+
+  } else {
+    // Default: recent
+    posts = await prisma.post.findMany({
+      where: categoryWhere,
+      include,
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
+  }
 
   return NextResponse.json(posts.map(normalizePost));
 }
