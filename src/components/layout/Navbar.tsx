@@ -28,12 +28,12 @@ import {
 import { useTheme } from "@/context/ThemeContext";
 
 const navLinks = [
-  { href: "/", label: "Feed", icon: Home },
-  { href: "/prayer", label: "Prayer", icon: Heart },
-  { href: "/find-a-church", label: "Churches", icon: Church },
-  { href: "/groups", label: "Groups", icon: Users },
-  { href: "/recommendations", label: "Businesses", icon: Store },
-  { href: "/events", label: "Events", icon: CalendarDays },
+  { href: "/", label: "Feed", icon: Home, badgeKey: "feed" },
+  { href: "/prayer", label: "Prayer", icon: Heart, badgeKey: "prayer" },
+  { href: "/find-a-church", label: "Churches", icon: Church, badgeKey: null },
+  { href: "/groups", label: "Groups", icon: Users, badgeKey: null },
+  { href: "/recommendations", label: "Businesses", icon: Store, badgeKey: null },
+  { href: "/events", label: "Events", icon: CalendarDays, badgeKey: null },
 ];
 
 export default function Navbar() {
@@ -46,6 +46,7 @@ export default function Navbar() {
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
   const [inviteCopied, setInviteCopied] = useState(false);
+  const [badges, setBadges] = useState<{ feed: boolean; prayer: boolean }>({ feed: false, prayer: false });
 
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
@@ -62,6 +63,36 @@ export default function Navbar() {
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  // Mark current page as seen and clear its badge
+  useEffect(() => {
+    const now = new Date().toISOString();
+    if (pathname === "/") {
+      localStorage.setItem("gathered_feed_last_seen", now);
+      setBadges((b) => ({ ...b, feed: false }));
+    } else if (pathname === "/prayer") {
+      localStorage.setItem("gathered_prayer_last_seen", now);
+      setBadges((b) => ({ ...b, prayer: false }));
+    }
+  }, [pathname]);
+
+  // Poll for new posts every 60 seconds
+  useEffect(() => {
+    async function checkNew() {
+      const feedSince = localStorage.getItem("gathered_feed_last_seen") ?? new Date(0).toISOString();
+      const res = await fetch(`/api/posts/new-count?since=${encodeURIComponent(feedSince)}`);
+      if (!res.ok) return;
+      const { feedCount, prayerCount } = await res.json();
+      setBadges({
+        feed: feedCount > 0 && pathname !== "/",
+        prayer: prayerCount > 0 && pathname !== "/prayer",
+      });
+    }
+    checkNew();
+    const interval = setInterval(checkNew, 60_000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleInviteClick() {
@@ -106,8 +137,9 @@ export default function Navbar() {
 
         {/* Nav links */}
         <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
-          {navLinks.map(({ href, label, icon: Icon }) => {
+          {navLinks.map(({ href, label, icon: Icon, badgeKey }) => {
             const isActive = pathname === href || (href !== "/" && pathname.startsWith(href));
+            const hasBadge = badgeKey ? badges[badgeKey as keyof typeof badges] : false;
             return (
               <Link
                 key={href}
@@ -118,7 +150,12 @@ export default function Navbar() {
                     : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white"
                 }`}
               >
-                <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? "text-navy dark:text-white" : "text-gray-500 dark:text-gray-400"}`} />
+                <span className="relative flex-shrink-0">
+                  <Icon className={`w-5 h-5 ${isActive ? "text-navy dark:text-white" : "text-gray-500 dark:text-gray-400"}`} />
+                  {hasBadge && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
+                  )}
+                </span>
                 {label}
               </Link>
             );
@@ -261,8 +298,9 @@ export default function Navbar() {
       {/* Mobile Bottom Nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#1e1e1e] border-t border-gray-200 dark:border-gray-700 pb-safe">
         <div className="flex items-center justify-around px-2 py-2">
-          {navLinks.slice(0, 5).map(({ href, label, icon: Icon }) => {
+          {navLinks.slice(0, 5).map(({ href, label, icon: Icon, badgeKey }) => {
             const isActive = pathname === href || (href !== "/" && pathname.startsWith(href));
+            const hasBadge = badgeKey ? badges[badgeKey as keyof typeof badges] : false;
             return (
               <Link
                 key={href}
@@ -271,7 +309,12 @@ export default function Navbar() {
                   isActive ? "text-navy dark:text-white" : "text-gray-400 dark:text-gray-500"
                 }`}
               >
-                <Icon className="w-5 h-5" />
+                <span className="relative">
+                  <Icon className="w-5 h-5" />
+                  {hasBadge && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
+                  )}
+                </span>
                 <span className="text-[10px] font-medium">{label}</span>
               </Link>
             );
